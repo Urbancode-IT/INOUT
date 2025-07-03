@@ -63,7 +63,7 @@ app.use(cors({
 }));
 
 // Optional: handle preflight requests globally
-app.options('*', cors());t
+app.options('*', cors());
 
 
 

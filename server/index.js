@@ -75,7 +75,7 @@ app.use(cors({
   origin: 'https://inout.urbancode.tech',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: false
+  credentials: true
 }));
 
 // Allow preflight requests

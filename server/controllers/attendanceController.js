@@ -93,3 +93,41 @@ exports.getUserLastAttendance = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch last record' });
   }
 };
+
+exports.getAttendanceByUser = async (req, res) => {
+  try {
+    const records = await Attendance.find({ user: req.params.userId })
+      .populate('user', 'name email');
+    res.json(records);
+  } catch (error) {
+    console.error('Error fetching attendance records by user:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.getMyAttendance = async (req, res) => {
+  try {
+    const records = await Attendance.find({ user: req.user._id })
+      .populate('user', 'name email');
+    res.json(records);
+  } catch (error) {
+    console.error('Error fetching my attendance:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.getAttendanceByDate = async (req, res) => {
+  try {
+    const date = new Date(req.params.date);
+    const records = await Attendance.find({
+      timestamp: {
+        $gte: new Date(date.setHours(0, 0, 0)),
+        $lt: new Date(date.setHours(23, 59, 59))
+      }
+    }).populate('user', 'name email');
+    res.json(records);
+  } catch (error) {
+    console.error('Error fetching attendance by date:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

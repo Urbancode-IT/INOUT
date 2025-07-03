@@ -15,9 +15,18 @@ const LeaveRequest = require('./models/LeaveRequest');
 const Task = require('./models/Task');
 
 const app = express();
-app.use(cors());
+
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+const uploadsPath = path.join(__dirname, 'uploads');
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*'); // 🔥 Allow cross-origin image loading
+  next();
+}, express.static(uploadsPath, {
+  setHeaders: (res, filePath) => {
+    const mime = require('mime');
+    res.setHeader('Content-Type', mime.getType(filePath));
+  }
+}));
 
 // MongoDB Models
 const User = require('./models/User');
@@ -376,7 +385,7 @@ app.post('/attendance', authMiddleware, upload.single('image'), async (req, res)
   let isInOffice = false;
   let matchedOfficeName = null;
 
-  for (const office of officeLocations) {
+  for (const office of officeLocation) {
     const officeCoords = { latitude: office.latitude, longitude: office.longitude };
     const distance = haversine(userLocation, officeCoords); // in meters
 

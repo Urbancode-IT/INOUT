@@ -17,7 +17,7 @@ import {
   FiHome,
   FiUsers,
   FiCheckSquare,
-  // FiImage,
+  FiImage,
   FiMenu,
   FiChevronRight,
   FiX
@@ -159,7 +159,7 @@ const Dashboard = () => {
       Type: record.type,
       Date: new Date(record.timestamp).toLocaleDateString(),
       Time: new Date(record.timestamp).toLocaleTimeString(),
-      Location: record.location || 'N/A',
+      // Location: record.location || 'N/A',
       'In Office': record.isInOffice ? 'Yes' : 'No',
     })));
     const wb = XLSX.utils.book_new();
@@ -209,90 +209,7 @@ const Dashboard = () => {
   return (
     <div className="flex h-screen bg-gray-50">
     {/* Sidebar */}
-<div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-md transition-all duration-300`}>
-  <div className="p-4 flex items-center justify-between border-b">
-    {sidebarOpen ? (
-      <h2 className="text-xl font-semibold text-gray-800">Employees</h2>
-    ) : (
-      <FiUsers className="text-xl text-gray-800" />
-    )}
-    <button 
-      onClick={() => setSidebarOpen(!sidebarOpen)}
-      className="text-gray-500 hover:text-gray-700"
-    >
-      <FiMenu />
-    </button>
-  </div>
 
-  <div 
-  className={`p-3 flex items-center cursor-pointer hover:bg-gray-100 ${
-    selectedEmployee === 'all' ? 'bg-blue-50 border-r-4 border-blue-500' : ''
-  }`}
-  onClick={() => setSelectedEmployee('all')}
->
-  {/* <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-    <FiUsers className="text-gray-500" />
-  </div> */}
-  {/* {sidebarOpen && (
-    <div className="ml-3 text-sm font-medium text-gray-700">All Employees</div>
-  )} */}
-</div>
-
-
-  <div className="overflow-y-auto h-[calc(100%-60px)]">
-    {employees.map(employee => {
-      const logo = employee.company === 'Urbancode'
-        ? urbancodeLogo
-        : employee.company === 'Jobzenter'
-        ? jobzenterLogo
-        : null; 
-
-      return (
-        <div 
-          key={employee._id}
-          onClick={() => handleEmployeeClick(employee)}
-          className={`p-3 flex items-center cursor-pointer hover:bg-gray-100 ${
-            selectedEmployee?._id === employee._id ? 'bg-blue-50 border-r-4 border-blue-500' : ''
-          }`}
-        >
-          <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-            {logo ? (
-              <img src={logo} alt={employee.company} className="h-6 w-6 object-contain" />
-            ) : (
-              <FiUser className="text-gray-500" />
-            )}
-          </div>
-          {sidebarOpen && (
-            <div className="ml-3 flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-gray-900 truncate">{employee.name}</p>
-              <p className="text-xs text-gray-500 truncate">{employee.position}</p>
-            </div>
-          )}
-          {sidebarOpen && <FiChevronRight className="text-gray-400" />}
-          
-        </div>
-        
-      );
-    })}
-
-    
-  {/* Logout Button */}
-  <div className="p-4 border-t border-gray-200">
-    <button
-      onClick={() => {
-        localStorage.removeItem('token');
-        navigate('/');
-      }}
-      className="flex items-center w-full text-sm text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-md"
-    >
-      <FiXCircle className="mr-2" />
-      {sidebarOpen && 'Logout'}
-    </button>
-  </div>
-  </div>
-  
-  
-</div>
 
 
       {/* Main Content */}
@@ -395,7 +312,7 @@ const Dashboard = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th> */}
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th> 
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
@@ -406,7 +323,7 @@ const Dashboard = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {employeeGroupedData.map((group) => (
                     <tr key={group.date} className="hover:bg-gray-50">
-                      {/* <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex space-x-2">
                       
                           <div className="flex flex-col items-center">
@@ -462,7 +379,7 @@ const Dashboard = () => {
                             </div>
                           )}
                         </div>
-                      </td> */}
+                      </td> 
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col space-y-1">
                           {group.checkIn && (
@@ -490,6 +407,17 @@ const Dashboard = () => {
                           )}
                         </div>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {group.checkIn?.isInOffice ? (
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                            In Office
+                          </span>
+                        ) : (
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">
+                            Remote
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex flex-col space-y-1">
                           {group.checkIn?.location && (
@@ -506,17 +434,7 @@ const Dashboard = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {group.checkIn?.isInOffice ? (
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                            In Office
-                          </span>
-                        ) : (
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">
-                            Remote
-                          </span>
-                        )}
-                      </td>
+                      
                     </tr>
                   ))} 
                 </tbody>
@@ -667,7 +585,7 @@ const Dashboard = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th> */}
+                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th> 
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-in/out</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
@@ -684,7 +602,7 @@ const Dashboard = () => {
 
                           
                           {/* Check-in Image */}
-                          {/* <div className="flex flex-col items-center">
+                          <div className="flex flex-col items-center">
                             <span className="text-xs text-gray-500 mb-1">Check-in</span>
                             <div className="h-12 w-12 rounded-md overflow-hidden border border-gray-200">
                               {group.checkIn?.image ? (
@@ -707,10 +625,10 @@ const Dashboard = () => {
                                 </div>
                               )}
                             </div>
-                          </div> */}
+                          </div> 
                           
                           {/* Check-out Image */}
-                          {/* {group.checkOut && (
+                           {group.checkOut && (
                             <div className="flex flex-col items-center">
                               <span className="text-xs text-gray-500 mb-1">Check-out</span>
                               <div className="h-12 w-12 rounded-md overflow-hidden border border-gray-200">
@@ -735,7 +653,7 @@ const Dashboard = () => {
                                 )}
                               </div>
                             </div>
-                          )} */}
+                          )} 
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -776,6 +694,17 @@ const Dashboard = () => {
                           )}
                         </div>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {group.checkIn?.isInOffice ? (
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                            In Office
+                          </span>
+                        ) : (
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">
+                            Remote
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex flex-col space-y-1">
                           {group.checkIn?.location && (
@@ -792,17 +721,7 @@ const Dashboard = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {group.checkIn?.isInOffice ? (
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                            In Office
-                          </span>
-                        ) : (
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">
-                            Remote
-                          </span>
-                        )}
-                      </td>
+                      
                     </tr>
                   ))}
                 </tbody>

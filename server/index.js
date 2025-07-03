@@ -651,7 +651,7 @@ app.put('/users/:id/salary', authMiddleware, roleMiddleware('admin'), async (req
 });
 app.get('/users/employees',authMiddleware, async (req, res) => {
    try {
-    const users = await User.find({ role: { $ne: 'admin' } }, '_id name email role');
+    const users = await User.find({ role: 'employee' }, '_id name email role');
     res.json(users);
   } catch (err) {
     console.error('Error fetching users:', err);

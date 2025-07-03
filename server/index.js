@@ -64,14 +64,22 @@ const upload = multer({ storage });
 
 // // Optional: handle preflight requests globally
 // app.options('*', cors());
-const corsOptions = {
+// const corsOptions = {
+//   origin: 'https://inout.urbancode.tech',
+//   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+//   credentials: false // Important: false since you're NOT using cookies
+// };
+// app.use(cors(corsOptions));
+app.use(cors({
   origin: 'https://inout.urbancode.tech',
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: false // Important: false since you're NOT using cookies
-};
-app.use(cors(corsOptions));
+  credentials: false
+}));
 
+// Allow preflight requests
+app.options('*', cors());
 
 /**************************************************************************************************/
 //------------------- Routes----------------------------------------------------------------------//

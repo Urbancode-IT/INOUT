@@ -13,6 +13,7 @@ const PendingUser = require('./models/PendingUser');
 const Holiday = require('./models/Holiday');
 const LeaveRequest = require('./models/LeaveRequest');
 const Task = require('./models/Task');
+const attendanceRoutes = require('./routes/attendanceRoutes');
 
 const app = express();
 
@@ -27,7 +28,7 @@ app.use('/uploads', (req, res, next) => {
     res.setHeader('Content-Type', mime.getType(filePath));
   }
 }));
-
+app.use('/attendance', attendanceRoutes);
 // MongoDB Models
 const User = require('./models/User');
 const Schedule = require('./models/Schedule');
@@ -53,8 +54,9 @@ app.use(cors({ origin: '*' }));
 
 
 
-
-// Routes
+/**************************************************************************************************/
+//------------------- Routes----------------------------------------------------------------------//
+/**************************************************************************************************/
 
 
 app.post('/register', async (req, res) => {
@@ -100,10 +102,9 @@ app.post('/register', async (req, res) => {
 });
 
 
-// -------------------------------------------
+// **********************************************************************************************************
 // 📝 Daily Task APIs
-// -------------------------------------------
-
+// **********************************************************************************************************
 // ✅ GET tasks by date (e.g., /api/tasks/2025-06-11)
 app.get('/api/tasks/:date', authMiddleware, async (req, res) => {
   try {
@@ -224,10 +225,14 @@ app.get('/api/tasks/summary', authMiddleware, async (req, res) => {
 
 
 
+// **************************************************************************************************************
+// 📝 Daily Task APIs Ends here
+// **************************************************************************************************************
 
 
-
-
+// **************************************************************************************************************
+// User Approval APIs
+// **************************************************************************************************************
 
 app.post('/admin/approve/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
@@ -274,6 +279,13 @@ app.get('/admin/pending-users', authMiddleware, roleMiddleware('admin'), async (
     res.status(500).json({ error: 'Failed to fetch pending users' });
   }
 });
+// **************************************************************************************************************
+// User Approval APIs Ends here
+// **************************************************************************************************************
+
+// **************************************************************************************************************
+// Leave APIs
+// **************************************************************************************************************
 
 
 // Apply for leave (employee)
@@ -347,6 +359,9 @@ app.get('/api/leaves/me', authMiddleware, async (req, res) => {
   }
 });
 
+// **************************************************************************************************************
+// Leave APIs Ends here
+// **************************************************************************************************************
 
 app.post('/login', async (req, res) => {
   try {
@@ -377,6 +392,11 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// **************************************************************************************************************
+// Attendance APIs
+// **************************************************************************************************************
+
 
 app.post('/attendance', authMiddleware, upload.single('image'), async (req, res) => {
   const [lat, lon] = req.body.location.split(',').map(parseFloat);
@@ -436,28 +456,6 @@ app.get('/attendance/last', authMiddleware, async (req, res) => {
   }
 });
 
-// // Get all users (admin only)
-// app.get('/users', async (req, res) => {
-//   try {
-//     const users = await User.find({}, 'name email role phone position company');
-//     res.json(users);
-//   } catch (error) {
-//     console.error('Error fetching users:', error);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// });
-
-// app.get('/users', authMiddleware, async (req, res) => {
-//   const users = await User.find({}, 'name email role phone position company');
-//   res.json(users);
-// });
-
-// If you're using roleMiddleware somewhere else on `/users`, REMOVE IT:
-app.get('/users', authMiddleware, async (req, res) => {
-  const users = await User.find({}, 'name email role phone position company');
-  res.json(users);
-});
-
 // GET /attendance/user/:userId/summary/:year/:month
 app.get('/attendance/user/:userId/summary/:year/:month', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   const { userId, year, month } = req.params;
@@ -506,7 +504,35 @@ app.get('/attendance/user/:userId/last', authMiddleware, roleMiddleware('admin')
     res.status(500).json({ error: 'Failed to fetch last record' });
   }
 });
+// **************************************************************************************************************
+// Attendance APIs Ends here
+// **************************************************************************************************************
 
+// // Get all users (admin only)
+// app.get('/users', async (req, res) => {
+//   try {
+//     const users = await User.find({}, 'name email role phone position company');
+//     res.json(users);
+//   } catch (error) {
+//     console.error('Error fetching users:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
+
+// app.get('/users', authMiddleware, async (req, res) => {
+//   const users = await User.find({}, 'name email role phone position company');
+//   res.json(users);
+// });
+// If you're using roleMiddleware somewhere else on `/users`, REMOVE IT:
+app.get('/users', authMiddleware, async (req, res) => {
+  const users = await User.find({}, 'name email role phone position company');
+  res.json(users);
+});
+
+
+// **************************************************************************************************************
+// Holiday APIs
+// **************************************************************************************************************
 
 // GET all holidays
 app.get('/api/holidays', authMiddleware, async (req, res) => {
@@ -539,6 +565,10 @@ app.post('/api/holidays', authMiddleware, roleMiddleware('admin'), async (req, r
     res.status(500).json({ error: 'Failed to add holiday' });
   }
 });
+
+// **************************************************************************************************************
+// Holiday APIs ends here
+// **************************************************************************************************************
 
 
 // Get single user
@@ -721,7 +751,6 @@ app.get('/api/admin/recent-attendance', authMiddleware, roleMiddleware('admin'),
   try {
     const logs = await Attendance.find()
       .sort({ timestamp: -1 })
-      .limit(10)
       .populate('user', 'name email');
 
     const formatted = logs.map(log => ({

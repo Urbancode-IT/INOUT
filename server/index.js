@@ -613,6 +613,7 @@ app.get('/api/admin/recent-attendance', authMiddleware, roleMiddleware('admin'),
       employeeName: log.user.name,
         type: log.type,
         timestamp: log.timestamp,
+        userId: log.user._id,
         officeName: log.officeName || 'Outside Office',
         image: log.image || '',
     }));

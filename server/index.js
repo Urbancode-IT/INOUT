@@ -35,7 +35,7 @@ const Schedule = require('./models/Schedule');
 const Attendance = require('./models/Attendance');
 
 // Middleware
-const authMiddleware = require('./middleware/auth');
+const authMiddleware = require('./middleware/auth').default;
 const roleMiddleware = require('./middleware/role');
 
 // Multer setup for image upload

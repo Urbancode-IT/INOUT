@@ -5,6 +5,7 @@ const AttendanceSchema = new mongoose.Schema({
   type: { type: String, enum: ['check-in', 'check-out'] },
   location: String,
   isInOffice: { type: Boolean, default: true },
+  officeName: String,
   image: String,
   timestamp: Date,
 });

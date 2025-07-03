@@ -1,14 +1,15 @@
+// server/config/officeLocation.js
 module.exports = [
   {
-    name: "Office 1",
+    name: "Pallikaranai",
     latitude: 12.94198577,
     longitude: 80.21012198,
     radiusMeters: 200, // Acceptable distance from Office 1
   },
   {
-    name: "Office 2",
-    latitude: 13.0023424,
-    longitude: 80.2193408,
-    radiusMeters: 300, // Acceptable distance from Office 2
+    name: "Velechery",
+    latitude: 12.9912597,
+    longitude: 80.2201616,
+    radiusMeters: 400, // Acceptable distance from Office 2
   }
 ];

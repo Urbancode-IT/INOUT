@@ -611,8 +611,10 @@ app.get('/api/admin/recent-attendance', authMiddleware, roleMiddleware('admin'),
 
     const formatted = logs.map(log => ({
       employeeName: log.user.name,
-      type: log.type,
-      timestamp: log.timestamp
+        type: log.type,
+        timestamp: log.timestamp,
+        officeName: log.officeName || 'Outside Office',
+        image: log.image || '',
     }));
 
     res.json(formatted);

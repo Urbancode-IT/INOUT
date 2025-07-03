@@ -4,6 +4,10 @@ const haversine = require('haversine-distance');
 
 exports.markAttendance = async (req, res) => {
   try {
+    if (!req.body.location || !req.body.location.includes(',')) {
+      return res.status(400).json({ error: 'Invalid location format' });
+    }
+
     const [lat, lon] = req.body.location.split(',').map(parseFloat);
     const userLocation = { latitude: lat, longitude: lon };
 
@@ -12,7 +16,7 @@ exports.markAttendance = async (req, res) => {
 
     for (const office of officeLocation) {
       const officeCoords = { latitude: office.latitude, longitude: office.longitude };
-      const distance = haversine(userLocation, officeCoords);
+      const distance = haversine(userLocation, officeCoords); // in meters
 
       if (distance <= office.radiusMeters) {
         isInOffice = true;
@@ -25,10 +29,10 @@ exports.markAttendance = async (req, res) => {
       user: req.user._id,
       type: req.body.type,
       location: req.body.location,
-      image: req.file.path,
+      image: req.file?.path || '', // Cloudinary URL or fallback
       isInOffice,
       officeName: matchedOfficeName || 'Outside Office',
-      timestamp: new Date()
+      timestamp: new Date(),
     });
 
     await attendance.save();

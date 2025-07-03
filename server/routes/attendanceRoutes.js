@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const attendanceController = require('../controllers/attendanceController');
-const auth = require('../middlewares/auth');
-const role = require('../middlewares/role');
-const upload = require('../middlewares/upload'); // ⬅️ We'll create this file next
+const auth = require('../middleware/auth');
+const role = require('../middleware/role');
+const upload = require('../middleware/upload'); // ⬅️ We'll create this file next
 
 router.post('/', auth, upload.single('image'), attendanceController.markAttendance);
 router.get('/all', auth, role('admin', 'user'), attendanceController.getAllAttendance);

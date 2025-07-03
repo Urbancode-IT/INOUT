@@ -2,10 +2,6 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = function (req, res, next) {
-    // ✅ Allow CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return next();
-  }
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ msg: 'No token, authorization denied' });

@@ -623,7 +623,7 @@ app.get('/api/admin/recent-attendance', authMiddleware, roleMiddleware('admin'),
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-app.get('/users/employees',authMiddleware, async (req, res) => {
+app.get('/employeesAttendance',authMiddleware, async (req, res) => {
    try {
     const users = await User.find({ role: 'employee' }, '_id name email role');
     res.json(users);

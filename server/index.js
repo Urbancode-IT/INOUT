@@ -13,12 +13,27 @@ const PendingUser = require('./models/PendingUser');
 const Holiday = require('./models/Holiday');
 const LeaveRequest = require('./models/LeaveRequest');
 const Task = require('./models/Task');
+const attendanceRoutes = require('./routes/attendanceRoutes');
 
 const app = express();
-app.use(cors());
-app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
+app.use(express.json());
+const uploadsPath = path.join(__dirname, 'uploads');
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*'); // 🔥 Allow cross-origin image loading
+  next();
+}, express.static(uploadsPath, {
+  setHeaders: (res, filePath) => {
+    const mime = require('mime');
+    res.setHeader('Content-Type', mime.getType(filePath));
+  }
+}));
+app.use('/attendance', attendanceRoutes);
 // MongoDB Models
 const User = require('./models/User');
 const Schedule = require('./models/Schedule');
@@ -40,13 +55,17 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-app.use(cors({ origin: '*' }));
 
 
 
 
-// Routes
 
+
+
+
+/**************************************************************************************************/
+//------------------- Routes----------------------------------------------------------------------//
+/**************************************************************************************************/
 
 app.post('/register', async (req, res) => {
   try {
@@ -91,10 +110,9 @@ app.post('/register', async (req, res) => {
 });
 
 
-// -------------------------------------------
+// **********************************************************************************************************
 // 📝 Daily Task APIs
-// -------------------------------------------
-
+// **********************************************************************************************************
 // ✅ GET tasks by date (e.g., /api/tasks/2025-06-11)
 app.get('/api/tasks/:date', authMiddleware, async (req, res) => {
   try {
@@ -215,10 +233,14 @@ app.get('/api/tasks/summary', authMiddleware, async (req, res) => {
 
 
 
+// **************************************************************************************************************
+// 📝 Daily Task APIs Ends here
+// **************************************************************************************************************
 
 
-
-
+// **************************************************************************************************************
+// User Approval APIs
+// **************************************************************************************************************
 
 app.post('/admin/approve/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
@@ -265,6 +287,13 @@ app.get('/admin/pending-users', authMiddleware, roleMiddleware('admin'), async (
     res.status(500).json({ error: 'Failed to fetch pending users' });
   }
 });
+// **************************************************************************************************************
+// User Approval APIs Ends here
+// **************************************************************************************************************
+
+// **************************************************************************************************************
+// Leave APIs
+// **************************************************************************************************************
 
 
 // Apply for leave (employee)
@@ -338,6 +367,9 @@ app.get('/api/leaves/me', authMiddleware, async (req, res) => {
   }
 });
 
+// **************************************************************************************************************
+// Leave APIs Ends here
+// **************************************************************************************************************
 
 app.post('/login', async (req, res) => {
   try {
@@ -369,63 +401,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.post('/attendance', authMiddleware, upload.single('image'), async (req, res) => {
-  const [lat, lon] = req.body.location.split(',').map(parseFloat);
-  const userLocation = { latitude: lat, longitude: lon };
 
-  let isInOffice = false;
-  let matchedOfficeName = null;
-
-  for (const office of officeLocations) {
-    const officeCoords = { latitude: office.latitude, longitude: office.longitude };
-    const distance = haversine(userLocation, officeCoords); // in meters
-
-    if (distance <= office.radiusMeters) {
-      isInOffice = true;
-      matchedOfficeName = office.name;
-      break;
-    }
-  }
-
-  const attendance = new Attendance({
-    user: req.user._id,
-    type: req.body.type,
-    location: req.body.location,
-    image: req.file.filename,
-    isInOffice,
-    officeName: matchedOfficeName || 'Outside Office',
-    timestamp: new Date()
-  });
-
-  await attendance.save();
-  res.json({
-    message: 'Attendance marked',
-    isInOffice,
-    office: matchedOfficeName
-  });
-});
-
-
-app.get('/attendance/all', authMiddleware, roleMiddleware('admin', 'user'), async (req, res) => {
-  try {
-    const records = await Attendance.find().populate('user', 'name email');
-    res.json(records);
-  } catch (error) {
-    console.error('Error fetching attendance records:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-//checkin or check out
-app.get('/attendance/last', authMiddleware, async (req, res) => {
-  try {
-    const lastRecord = await Attendance.findOne({ user: req.user._id }).sort({ timestamp: -1 });
-    if (!lastRecord) return res.status(200).json({ type: null });
-    res.json({ type: lastRecord.type });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch last attendance' });
-  }
-});
 
 // // Get all users (admin only)
 // app.get('/users', async (req, res) => {
@@ -442,62 +418,16 @@ app.get('/attendance/last', authMiddleware, async (req, res) => {
 //   const users = await User.find({}, 'name email role phone position company');
 //   res.json(users);
 // });
-
 // If you're using roleMiddleware somewhere else on `/users`, REMOVE IT:
 app.get('/users', authMiddleware, async (req, res) => {
   const users = await User.find({}, 'name email role phone position company');
   res.json(users);
 });
 
-// GET /attendance/user/:userId/summary/:year/:month
-app.get('/attendance/user/:userId/summary/:year/:month', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  const { userId, year, month } = req.params;
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 0, 23, 59, 59);
 
-  try {
-    const allDays = new Set();
-    const attendanceRecords = await Attendance.find({
-      user: userId,
-      timestamp: { $gte: startDate, $lte: endDate },
-      type: 'check-in'
-    });
-
-    attendanceRecords.forEach(record => {
-      const dateKey = record.timestamp.toISOString().split('T')[0];
-      allDays.add(dateKey);
-    });
-
-    const presentCount = allDays.size;
-    const totalDays = endDate.getDate();
-    const absentCount = totalDays - presentCount;
-
-    res.json({ present: presentCount, absent: absentCount });
-  } catch (error) {
-    console.error('Attendance summary error:', error);
-    res.status(500).json({ error: 'Failed to fetch attendance summary' });
-  }
-});
-
-
-// GET /attendance/user/:userId/last
-app.get('/attendance/user/:userId/last', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const lastRecord = await Attendance.findOne({ user: req.params.userId })
-      .sort({ timestamp: -1 })
-      .select('type timestamp');
-
-    if (!lastRecord) {
-      return res.json({ type: 'None', timestamp: null });
-    }
-
-    res.json(lastRecord);
-  } catch (error) {
-    console.error('Last attendance error:', error);
-    res.status(500).json({ error: 'Failed to fetch last record' });
-  }
-});
-
+// **************************************************************************************************************
+// Holiday APIs
+// **************************************************************************************************************
 
 // GET all holidays
 app.get('/api/holidays', authMiddleware, async (req, res) => {
@@ -531,6 +461,10 @@ app.post('/api/holidays', authMiddleware, roleMiddleware('admin'), async (req, r
   }
 });
 
+// **************************************************************************************************************
+// Holiday APIs ends here
+// **************************************************************************************************************
+
 
 // Get single user
 app.get('/users/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
@@ -557,45 +491,6 @@ app.get('/users/:id', authMiddleware, roleMiddleware('admin'), async (req, res) 
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-// Get all attendance records for a user
-app.get('/attendance/user/:userId', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const records = await Attendance.find({ user: req.params.userId }).populate('user', 'name email');
-    res.json(records);
-  } catch (error) {
-    console.error('Error fetching attendance records:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});   
-
-// Get all attendance records for the logged-in user
-app.get('/attendance/me', authMiddleware, async (req, res) => {
-  try {
-    const records = await Attendance.find({ user: req.user._id }).populate('user', 'name email');
-    res.json(records);
-  } catch (error) {
-    console.error('Error fetching attendance records:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-// Get all attendance records for a specific date
-app.get('/attendance/date/:date', authMiddleware, roleMiddleware('admin'), async (req, res) => {
-  try {
-    const date = new Date(req.params.date);
-    const records = await Attendance.find({
-      timestamp: {
-        $gte: new Date(date.setHours(0, 0, 0)),
-        $lt: new Date(date.setHours(23, 59, 59))
-      }
-    }).populate('user', 'name email');
-    res.json(records);
-  } catch (error) {
-    console.error('Error fetching attendance records:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-
 
 // Get user's schedule
 app.get('/schedules/user/:userId', authMiddleware, async (req, res) => {
@@ -712,7 +607,6 @@ app.get('/api/admin/recent-attendance', authMiddleware, roleMiddleware('admin'),
   try {
     const logs = await Attendance.find()
       .sort({ timestamp: -1 })
-      .limit(10)
       .populate('user', 'name email');
 
     const formatted = logs.map(log => ({

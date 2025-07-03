@@ -25,7 +25,7 @@ exports.markAttendance = async (req, res) => {
       user: req.user._id,
       type: req.body.type,
       location: req.body.location,
-      image: req.file.filename,
+      image: req.file.path,
       isInOffice,
       officeName: matchedOfficeName || 'Outside Office',
       timestamp: new Date()

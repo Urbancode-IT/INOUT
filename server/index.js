@@ -21,11 +21,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-app.options('*', cors());
 
 app.use(express.json());
 const uploadsPath = path.join(__dirname, 'uploads');
-app.get('/ping', (req, res) => res.send('pong'));
 app.use('/uploads', (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*'); // 🔥 Allow cross-origin image loading
   next();
@@ -68,7 +66,7 @@ const upload = multer({ storage });
 /**************************************************************************************************/
 //------------------- Routes----------------------------------------------------------------------//
 /**************************************************************************************************/
-
+app.get('/ping', (req, res) => res.send('pong'));
 app.post('/register', async (req, res) => {
   try {
     const { name, email, password, phone, position, company, schedule } = req.body;
@@ -467,25 +465,7 @@ app.post('/api/holidays', authMiddleware, roleMiddleware('admin'), async (req, r
 // Holiday APIs ends here
 // **************************************************************************************************************
 
-// Add this to your backend routes
-app.get('/users/me', authMiddleware, async (req, res) => {
-  try {
-    // Get user ID from the authenticated request (added by authMiddleware)
-    const userId = req.user._id;
-    
-    // Find user by ID and exclude the password field
-    const user = await User.findById(userId).select('-password');
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    res.json(user);
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+
 // Get single user
 app.get('/users/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
@@ -523,7 +503,25 @@ app.get('/schedules/user/:userId', authMiddleware, async (req, res) => {
   }
 });
 
-
+// Add this to your backend routes
+app.get('/users/me', authMiddleware, async (req, res) => {
+  try {
+    // Get user ID from the authenticated request (added by authMiddleware)
+    const userId = req.user._id;
+    
+    // Find user by ID and exclude the password field
+    const user = await User.findById(userId).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // Update user
 app.put('/users/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {

@@ -17,7 +17,7 @@ const attendanceRoutes = require('./routes/attendanceRoutes');
 
 const app = express();
 app.use(cors({
-    origin: ['https://inout.urbancode.tech','http://localhost:5173'],
+    origin: ['https://inout.urbancode.tech','http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));

@@ -603,19 +603,29 @@ app.get('/api/admin/summary', authMiddleware, roleMiddleware('admin'), async (re
 });
 
 
+// routes/attendanceRoutes.js or directly in your index.js
+
 app.get('/api/admin/recent-attendance', authMiddleware, roleMiddleware('admin'), async (req, res) => {
   try {
     const logs = await Attendance.find()
       .sort({ timestamp: -1 })
-      .populate('user', 'name email');
+      .populate({
+        path: 'user',
+        match: { role: 'employee' }, // ✅ Filter by employee role
+        select: 'name email role'    // ✅ Include role for clarity (optional)
+      });
 
-    const formatted = logs.map(log => ({
+    // Filter out logs where user is null (because populate didn't match)
+    const filteredLogs = logs.filter(log => log.user !== null);
+
+    const formatted = filteredLogs.map(log => ({
       employeeName: log.user.name,
-        type: log.type,
-        timestamp: log.timestamp,
-        userId: log.user._id,
-        officeName: log.officeName || 'Outside Office',
-        image: log.image || '',
+      userId: log.user._id,
+      role: log.user.role,               // ✅ Included for frontend filtering/debugging
+      type: log.type,
+      timestamp: log.timestamp,
+      officeName: log.officeName || 'Outside Office',
+      image: log.image || '',
     }));
 
     res.json(formatted);
@@ -624,6 +634,7 @@ app.get('/api/admin/recent-attendance', authMiddleware, roleMiddleware('admin'),
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 app.get('/employeesAttendance',authMiddleware, async (req, res) => {
    try {
     const users = await User.find({ role: 'employee' }, '_id name email role');

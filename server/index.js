@@ -14,6 +14,7 @@ const Holiday = require('./models/Holiday');
 const LeaveRequest = require('./models/LeaveRequest');
 const Task = require('./models/Task');
 const attendanceRoutes = require('./routes/attendanceRoutes');
+const transporter = require('../config/emailConfig');
 
 const app = express();
 app.use(cors({
@@ -98,6 +99,24 @@ app.post('/register', async (req, res) => {
     });
 
     await pending.save();
+
+    const mailOptions = {
+  from: process.env.NOTIFY_EMAIL,
+  to: [process.env.NOTIFY_EMAIL, 'admin@urbancode.in','krithika@urbancode.in','savitha.saviy@gmail.com'],// your email
+  subject: '🚀 New User Registration Alert for INOUT!',
+  html: `
+    <div style="font-family: Arial, sans-serif; border: 1px solid #e0e0e0; border-radius: 10px; padding: 20px; background: #f9f9ff;">
+      <h2 style="color: #6366f1;">👤 New Registration Received for Progz</h2>
+      <p><strong>👨‍💼 Name:</strong> ${pending.name}</p>
+      <p><strong>📧 Email:</strong> ${pending.email}</p>
+      <p><strong>📱 Phone:</strong> ${pending.phone || 'N/A'}</p>
+      <p><strong>🎓 Role:</strong> ${pending.positon} - ${pending.company}</p>
+      <hr style="margin: 20px 0;" />
+      <p style="font-size: 14px;">🔐 <strong>Action Needed:</strong> Please login to the <a href="https://inout.urbancode.tech/" style="color: #4f46e5;">Admin Panel</a> to approve this user.</p>
+      <p style="font-size: 13px; color: #999;">📅 ${new Date().toLocaleString()}</p>
+    </div>
+  `
+};
 
     res.status(201).json({
       message: 'Registration submitted and pending admin approval'

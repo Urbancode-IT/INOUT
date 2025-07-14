@@ -117,7 +117,7 @@ app.post('/register', async (req, res) => {
     </div>
   `
 };
-
+await transporter.sendMail(mailOptions);
     res.status(201).json({
       message: 'Registration submitted and pending admin approval'
     });

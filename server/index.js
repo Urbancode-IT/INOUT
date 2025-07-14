@@ -14,7 +14,7 @@ const Holiday = require('./models/Holiday');
 const LeaveRequest = require('./models/LeaveRequest');
 const Task = require('./models/Task');
 const attendanceRoutes = require('./routes/attendanceRoutes');
-const transporter = require('../config/emailConfig');
+const transporter = require('./config/emailConfig');
 
 const app = express();
 app.use(cors({

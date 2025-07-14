@@ -306,6 +306,21 @@ app.get('/admin/pending-users', authMiddleware, roleMiddleware('admin'), async (
     res.status(500).json({ error: 'Failed to fetch pending users' });
   }
 });
+
+app.delete('/admin/reject/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedUser = await PendingUser.findByIdAndDelete(id);
+    if (!deletedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'Pending user rejected and removed' });
+  } catch (err) {
+    console.error('Error rejecting user:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 // **************************************************************************************************************
 // User Approval APIs Ends here
 // **************************************************************************************************************

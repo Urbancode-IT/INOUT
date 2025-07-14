@@ -110,7 +110,7 @@ app.post('/register', async (req, res) => {
       <p><strong>👨‍💼 Name:</strong> ${pending.name}</p>
       <p><strong>📧 Email:</strong> ${pending.email}</p>
       <p><strong>📱 Phone:</strong> ${pending.phone || 'N/A'}</p>
-      <p><strong>🎓 Role:</strong> ${pending.positon} - ${pending.company}</p>
+      <p><strong>🎓 Role:</strong> ${pending.position} - ${pending.company}</p>
       <hr style="margin: 20px 0;" />
       <p style="font-size: 14px;">🔐 <strong>Action Needed:</strong> Please login to the <a href="https://inout.urbancode.tech/" style="color: #4f46e5;">Admin Panel</a> to approve this user.</p>
       <p style="font-size: 13px; color: #999;">📅 ${new Date().toLocaleString()}</p>

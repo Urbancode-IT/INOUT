@@ -356,7 +356,7 @@ app.post('/api/leaves/apply', authMiddleware, async (req, res) => {
       <h2 style="color: #1d4ed8;">📅 New Leave Request Submitted</h2>
       <p><strong>👤 Name:</strong> ${user.name}</p>
       <p><strong>✉️ Email:</strong> ${user.email}</p>
-      <p><strong>🏢 Company:</strong> ${user.company}</p>
+      <p><strong>🏢 Role:</strong> ${user.position} - ${user.company}</p>
       <p><strong>🛫 Leave From:</strong> ${new Date(fromDate).toLocaleDateString()}</p>
       <p><strong>🛬 Leave To:</strong> ${new Date(toDate).toLocaleDateString()}</p>
       <p><strong>📝 Type:</strong> ${leaveType || 'N/A'}</p>

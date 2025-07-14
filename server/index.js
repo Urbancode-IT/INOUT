@@ -106,7 +106,7 @@ app.post('/register', async (req, res) => {
   subject: '🚀 New User Registration Alert for INOUT!',
   html: `
     <div style="font-family: Arial, sans-serif; border: 1px solid #e0e0e0; border-radius: 10px; padding: 20px; background: #f9f9ff;">
-      <h2 style="color: #6366f1;">👤 New Registration Received for Progz</h2>
+      <h2 style="color: #6366f1;">👤 New Registration Received for InOut</h2>
       <p><strong>👨‍💼 Name:</strong> ${pending.name}</p>
       <p><strong>📧 Email:</strong> ${pending.email}</p>
       <p><strong>📱 Phone:</strong> ${pending.phone || 'N/A'}</p>

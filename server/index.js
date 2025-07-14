@@ -337,7 +337,7 @@ app.post('/api/leaves/apply', authMiddleware, async (req, res) => {
     if (!fromDate || !toDate || !reason) {
       return res.status(400).json({ error: 'Missing fields' });
     }
-
+    const user = req.user;
     const leave = new LeaveRequest({
       user: req.user._id,
       fromDate,
@@ -347,6 +347,29 @@ app.post('/api/leaves/apply', authMiddleware, async (req, res) => {
     });
 
     await leave.save();
+    const mailOptions = {
+  from: process.env.NOTIFY_EMAIL,
+  to: [process.env.NOTIFY_EMAIL, 'admin@urbancode.in', 'krithika@urbancode.in', 'savitha.saviy@gmail.com'],
+  subject: '🌴 New Leave Request Submitted – INOUT Portal',
+  html: `
+    <div style="font-family: Arial, sans-serif; border: 1px solid #e0e0e0; border-radius: 10px; padding: 20px; background: #f0faff;">
+      <h2 style="color: #1d4ed8;">📅 New Leave Request Submitted</h2>
+      <p><strong>👤 Name:</strong> ${user.name}</p>
+      <p><strong>✉️ Email:</strong> ${user.email}</p>
+      <p><strong>🏢 Company:</strong> ${user.company}</p>
+      <p><strong>🛫 Leave From:</strong> ${new Date(fromDate).toLocaleDateString()}</p>
+      <p><strong>🛬 Leave To:</strong> ${new Date(toDate).toLocaleDateString()}</p>
+      <p><strong>📝 Type:</strong> ${leaveType || 'N/A'}</p>
+      <p><strong>📌 Reason:</strong> ${reason}</p>
+
+      <hr style="margin: 20px 0;" />
+      <p style="font-size: 14px;">🔐 <strong>Action Required:</strong> Please log in to the <a href="https://inout.urbancode.tech/" style="color: #1d4ed8;">Admin Panel</a> to review and approve this leave.</p>
+      <p style="font-size: 13px; color: #666;">🕒 Submitted on: ${new Date().toLocaleString()}</p>
+    </div>
+  `
+};
+
+await transporter.sendMail(mailOptions);
     res.status(201).json({ message: 'Leave request submitted' });
   } catch (err) {
     console.error('Leave apply error:', err);

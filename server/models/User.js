@@ -1,5 +1,22 @@
 const mongoose = require('mongoose');
 
+// Define BankDetails as a sub-schema
+const BankDetailsSchema = new mongoose.Schema({
+  bankingName: {
+    type: String
+  },
+  bankAccountNumber: {
+    type: String
+  },
+  ifscCode: {
+    type: String
+  },
+  upiId: {
+    type: String
+  }
+}, { _id: false }); // Prevents creation of an _id for this sub-doc
+
+// Main User schema
 const UserSchema = new mongoose.Schema({
   name: { 
     type: String, 
@@ -9,7 +26,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    lowercase: true // ✅ Ensures consistent email casing
+    lowercase: true
   },
   password: { 
     type: String, 
@@ -29,13 +46,41 @@ const UserSchema = new mongoose.Schema({
   },
   salary: {
     type: Number,
-    default: 0 // ✅ Salary field added for payroll
+    default: 0
   },
   role: { 
     type: String, 
-    enum: ['employee', 'admin','other'], 
+    enum: ['employee', 'admin', 'other'], 
     default: 'employee' 
-  }
+  },
+
+  // Additional fields
+  profilePic: {
+    type: String
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  department: {
+    type: String
+  },
+  qualification: {
+    type: String
+  },
+  dateOfJoining: {
+    type: Date
+  },
+  rolesAndResponsibility: {
+    type: [String],
+    default: []
+  },
+  skills: {
+    type: [String],
+    default: []
+  },
+  bankDetails: BankDetailsSchema
+
 }, {
   timestamps: true
 });

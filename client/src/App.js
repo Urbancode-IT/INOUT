@@ -1,5 +1,9 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {  Routes, Route } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import {jwtDecode} from 'jwt-decode';
+import { useEffect } from 'react';
+
 
 
 // Savitha Admnin Dashboard
@@ -29,8 +33,30 @@ import TaskManagerPage from './pages/employee/TaskManagerPage';
 import Layout from './components/admin-dashboard/layout/Layout';
 
 function App() {
+   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        const isExpired = decoded.exp * 1000 < Date.now();
+
+        if (isExpired) {
+          localStorage.removeItem('token');
+        } else {
+          if (decoded.role === 'admin') navigate('/dashboard');
+          else if (decoded.role === 'employee') navigate('/attendance');
+        }
+      } catch (err) {
+        console.error('Error decoding token:', err);
+        localStorage.removeItem('token');
+      }
+    }
+  }, []);
   return (
-    <Router>
+   
       <Routes>
 
         {/* Public Routes */}
@@ -59,7 +85,7 @@ function App() {
         </Route>
 
       </Routes>
-    </Router>
+   
   );
 }
 

@@ -22,6 +22,9 @@ export const compressImage = async (file, maxSizeKB = 40) => {
 
         canvas.width = width;
         canvas.height = height;
+        // ✅ Mirror the image horizontally
+        ctx.translate(width, 0);
+        ctx.scale(-1, 1);
         ctx.drawImage(img, 0, 0, width, height);
 
         let quality = 0.9;

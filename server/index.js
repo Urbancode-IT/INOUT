@@ -477,8 +477,32 @@ app.post('/login', async (req, res) => {
 // });
 // If you're using roleMiddleware somewhere else on `/users`, REMOVE IT:
 app.get('/users', authMiddleware, async (req, res) => {
-  const users = await User.find({}, 'name email role phone position company');
-  res.json(users);
+  try {
+    const users = await User.find({}, {
+      name: 1,
+      email: 1,
+      role: 1,
+      phone: 1,
+      position: 1,
+      company: 1,
+      salary: 1,
+      department: 1,
+      qualification: 1,
+      dateOfJoining: 1,
+      isActive: 1,
+      profilePic: 1,
+      skills: 1,
+      rolesAndResponsibility: 1,
+      bankDetails: 1,
+      createdAt: 1,
+      updatedAt: 1
+    });
+
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
 });
 
 

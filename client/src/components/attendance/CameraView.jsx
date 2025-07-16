@@ -17,7 +17,9 @@ const CameraView = forwardRef((props, ref) => {
         playsInline
         muted
         className="w-full h-80 object-cover aspect-video"
-        style={{ backgroundColor: 'black' }}
+        style={{ backgroundColor: 'black',
+          transform: 'scaleX(-1)',
+          WebkitTransform: 'scaleX(-1)' }}
       />
     </div>
   );

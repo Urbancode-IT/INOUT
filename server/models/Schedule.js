@@ -22,7 +22,8 @@ const ScheduleSchema = new mongoose.Schema({
     Friday: DaySchedule,
     Saturday: DaySchedule,
     Sunday: DaySchedule
-  }
-});
+  },
+  salary: { type: Number, default: 0 }
+}, { timestamps: true });
 
 module.exports = mongoose.model('Schedule', ScheduleSchema);

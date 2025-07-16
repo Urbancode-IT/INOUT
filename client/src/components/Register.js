@@ -25,11 +25,12 @@ function Register() {
     Wednesday: { start: '09:00', end: '17:00', isLeave: false },
     Thursday: { start: '09:00', end: '17:00', isLeave: false },
     Friday: { start: '09:00', end: '17:00', isLeave: false },
-    Saturday: { start: '', end: '', isLeave: true },
+    Saturday: { start: '09:00', end: '17:00', isLeave: false },
     Sunday: { start: '', end: '', isLeave: true }
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,7 +56,7 @@ function Register() {
       Swal.fire({
     icon: 'success',
     title: 'User Created!',
-    text: 'Employee registered successfully!',
+    text: 'Employee registered successfully! Account will be activated once approved by admin side...',
     confirmButtonColor: '#6ca8a4'
   });
 
@@ -99,7 +100,25 @@ function Register() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputField icon={<FiUser />} label="Full Name" name="name" value={formData.name} onChange={handleChange} placeholder="Jane Doe" />
             <InputField icon={<FiMail />} type="email" label="Email Address" name="email" value={formData.email} onChange={handleChange} placeholder="jane@example.com" />
-            <InputField icon={<FiLock />} type="password" label="Password" name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" />
+            <div className="relative">
+  <InputField
+    icon={<FiLock />}
+    type={showPassword ? 'text' : 'password'}
+    label="Password"
+    name="password"
+    value={formData.password}
+    onChange={handleChange}
+    placeholder="••••••••"
+  />
+  <button
+    type="button"
+    onClick={() => setShowPassword(prev => !prev)}
+    className="absolute right-3 top-[38px] text-sm text-[#6ca8a4] hover:underline"
+  >
+    {showPassword ? 'Hide' : 'Show'}
+  </button>
+</div>
+
 
             <div>
               <label className="block text-sm font-semibold text-[#2c2e3e] mb-1 flex items-center">
@@ -111,6 +130,7 @@ function Register() {
                 </span>
                 <input
                   type="tel"
+                  inputMode='numeric'
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}

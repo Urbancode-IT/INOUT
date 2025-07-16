@@ -12,7 +12,11 @@ module.exports = function (req, res, next) {
     req.user = {
       _id: decoded.userId,
       role: decoded.role,
-      name: decoded.name
+      name: decoded.name,
+      email: decoded.email,
+      phone: decoded.phone,
+      company: decoded.company,
+      position: decoded.position
     };
     next();
   } catch (err) {

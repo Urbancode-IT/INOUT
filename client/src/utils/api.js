@@ -14,10 +14,12 @@ export const API_ENDPOINTS = {
   authLogin: `${BASE_URL}/api/auth/login`,
   register: `${BASE_URL}/register`,
   getUsers: `${BASE_URL}/users`,
+  getCurrentUser: `${BASE_URL}/users/me`,
   getUserById: (userId) => `${BASE_URL}/users/${userId}`,
   updateUser: (userId) => `${BASE_URL}/users/${userId}`,
   updateSalary: (userId) => `${BASE_URL}/users/${userId}/salary`,
-  getCurrentUser: `${BASE_URL}/users/me`,
+  
+  getAllUsers: `${BASE_URL}/employeesAttendance`,
   // getUserById: (id) => `${BASE_URL}/users/${id}`,
   // getAttendanceByUser: (id) => `${BASE_URL}/attendance/user/${id}`,
 

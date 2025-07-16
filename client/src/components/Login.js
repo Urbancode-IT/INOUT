@@ -13,6 +13,8 @@ function Login() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -88,7 +90,7 @@ function Login() {
               Password
             </label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               id="password"
               required
               value={password}
@@ -96,6 +98,13 @@ function Login() {
               className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white/60 placeholder-gray-400 text-gray-800 focus:ring-2 focus:ring-[#6ca8a4] focus:outline-none"
               placeholder="••••••••"
             />
+            <button
+  type="button"
+  onClick={() => setShowPassword((prev) => !prev)}
+  className="text-sm text-[#6ca8a4] hover:underline mt-1"
+>
+  {showPassword ? "Hide Password" : "Show Password"}
+</button>
           </div>
 
           <div className="flex items-center justify-between text-sm">
@@ -109,12 +118,12 @@ function Login() {
                 Swal.fire({
                   icon: 'info',
                   title: 'Forgot Password?',
-                  text: 'This feature is coming soon!',
+                  text: 'Contact admin for password reset.',
                 })
               }
               className="text-[#6ca8a4] hover:underline font-medium"
             >
-              Forgot?
+              Forgot Password?
             </button>
           </div>
 

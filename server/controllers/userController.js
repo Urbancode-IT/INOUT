@@ -63,7 +63,7 @@ const userController = {
   },
 
   updateUser: async (req, res) => {
-     try {
+  try {
     const {
       name,
       email,
@@ -81,28 +81,21 @@ const userController = {
       bankDetails
     } = req.body;
 
-    const updateData = {
-      name,
-      email,
-      phone,
-      position,
-      company,
-      salary,
-      department,
-      qualification,
-      profilePic,
-      bankDetails,
-      rolesAndResponsibility,
-      skills,
-    };
-
-    if (dateOfJoining) {
-      updateData.dateOfJoining = new Date(dateOfJoining);
-    }
-
-    if (password) {
-      updateData.password = await bcrypt.hash(password, 10);
-    }
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (phone) updateData.phone = phone;
+    if (position) updateData.position = position;
+    if (company) updateData.company = company;
+    if (salary !== undefined) updateData.salary = salary;
+    if (department) updateData.department = department;
+    if (qualification) updateData.qualification = qualification;
+    if (profilePic) updateData.profilePic = profilePic;
+    if (Array.isArray(skills)) updateData.skills = skills;
+    if (Array.isArray(rolesAndResponsibility)) updateData.rolesAndResponsibility = rolesAndResponsibility;
+    if (bankDetails && typeof bankDetails === 'object') updateData.bankDetails = bankDetails;
+    if (dateOfJoining) updateData.dateOfJoining = new Date(dateOfJoining);
+    if (password) updateData.password = await bcrypt.hash(password, 10);
 
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
@@ -117,7 +110,7 @@ const userController = {
     console.error('Error updating user:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
-  },
+},
 
   updateSalary: async (req, res) => {
     try {

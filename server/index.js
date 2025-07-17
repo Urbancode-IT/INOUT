@@ -29,7 +29,7 @@ app.get('/ping', (req, res) => res.send('pong'));
 
 // Route Mounts (✅ Modularized)
 app.use('/attendance', require('./routes/attendanceRoutes'));
-app.use('/', require('./routes/authRoutes'));
+app.use('/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/users', require('./routes/userRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));

@@ -9,7 +9,8 @@ const Schedule = require('../models/Schedule');
 const userController = {
   getAllUsers: async (req, res) => {
     try {
-      const users = await User.find({}, {
+      const users = await User.find({}, { name: { $ne: "Admin" } },{
+         
         name: 1,
         email: 1,
         role: 1,

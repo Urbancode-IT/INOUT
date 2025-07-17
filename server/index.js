@@ -29,7 +29,7 @@ app.get('/ping', (req, res) => res.send('pong'));
 
 // Route Mounts (✅ Modularized)
 app.use('/attendance', require('./routes/attendanceRoutes'));
-app.use('/auth', require('./routes/authRoutes'));
+app.use('/', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/users', require('./routes/userRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
@@ -48,7 +48,7 @@ async function setupAdmin() {
       email: 'admin@urbancode.in',
       password: hashed,
       role: 'admin',
-      phone: '6374129515',
+      phone: '9876543210',
       position: 'Admin',
       company: 'Urbancode'
     });

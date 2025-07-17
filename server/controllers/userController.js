@@ -28,7 +28,7 @@ const userController = {
         bankDetails: 1,
         createdAt: 1,
         updatedAt: 1
-      });
+      }).sort({name: 1});
 
       res.json(users);
     } catch (error) {

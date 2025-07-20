@@ -37,6 +37,7 @@ app.use('/api/tasks', require('./routes/taskRoutes'));
 app.use('/api/leaves', require('./routes/leaveRoutes'));
 app.use('/api/holidays', require('./routes/holidayRoutes'));
 
+
 // Default Admin Setup
 const User = require('./models/User');
 const bcrypt = require('bcryptjs');

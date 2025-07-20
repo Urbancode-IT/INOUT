@@ -26,7 +26,7 @@ export const API_ENDPOINTS = {
   getUserById: (userId) => `${BASE_URL}/users/${userId}`,
   updateUser: (userId) => `${BASE_URL}/users/${userId}`,
   updateSalary: (userId) => `${BASE_URL}/users/${userId}/salary`,
-  
+  getSchedules: `${BASE_URL}/users/schedules`,
   getAllUsers: `${BASE_URL}/employeesAttendance`,
   // getUserById: (id) => `${BASE_URL}/users/${id}`,
   // getAttendanceByUser: (id) => `${BASE_URL}/attendance/user/${id}`,

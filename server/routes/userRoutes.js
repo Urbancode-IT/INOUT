@@ -9,7 +9,8 @@ router.get('/', auth, userController.getAllUsers);
 
 // ✅ GET my profile (logged in user)
 router.get('/me', auth, userController.getLoggedInUser);
-
+// ✅ GET schedules for admin
+router.get('/schedules', auth, role('admin'), userController.getSchedules);
 // ✅ GET user by ID
 router.get('/:id', auth, role('admin'), userController.getSingleUser);
 
@@ -18,5 +19,5 @@ router.put('/:id', auth, role('admin'), userController.updateUser);
 
 // ✅ UPDATE salary
 router.put('/:id/salary', auth, role('admin'), userController.updateSalary);
-router.get('/schedules', auth, role('admin'), userController.getSchedules);
+
 module.exports = router;

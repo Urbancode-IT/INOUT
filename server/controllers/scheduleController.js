@@ -1,4 +1,4 @@
-const User = require('../models/User');
+
 const Schedule = require('../models/Schedule');
 
 const scheduleController = {

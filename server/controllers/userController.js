@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Schedule = require('../models/Schedule');
-const { getSchedules } = require('../../client/src/utils/api');
+
 
 const userController = {
   getAllUsers: async (req, res) => {
@@ -144,16 +144,6 @@ const userController = {
     }
   },
 
-
-  getSchedules: async (req, res) => {
-    try {
-      const schedules = await Schedule.find().populate('user', 'name email');
-      res.json(schedules);
-    } catch (error) {
-      console.error('Error fetching schedules:', error);
-      res.status(500).json({ error: 'Failed to fetch schedules' });
-    }
-  }
 };
 
 module.exports = userController;

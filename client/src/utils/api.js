@@ -1,3 +1,5 @@
+import { put } from "../../../server/routes/userRoutes";
+
 // src/utils/api.js
 export const BASE_URL = 'https://uc-attendance-system-1ts2.onrender.com';
 
@@ -26,7 +28,8 @@ export const API_ENDPOINTS = {
   getUserById: (userId) => `${BASE_URL}/users/${userId}`,
   updateUser: (userId) => `${BASE_URL}/users/${userId}`,
   updateSalary: (userId) => `${BASE_URL}/users/${userId}/salary`,
-  getSchedules: `${BASE_URL}/users/schedules`,
+  getSchedules: `${BASE_URL}/schedules`,
+  putUserSchedule: (userId) => `${BASE_URL}/schedules/${userId}`,
   getAllUsers: `${BASE_URL}/employeesAttendance`,
   // getUserById: (id) => `${BASE_URL}/users/${id}`,
   // getAttendanceByUser: (id) => `${BASE_URL}/attendance/user/${id}`,

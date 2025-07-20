@@ -36,7 +36,7 @@ app.use('/users', require('./routes/userRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
 app.use('/api/leaves', require('./routes/leaveRoutes'));
 app.use('/api/holidays', require('./routes/holidayRoutes'));
-
+app.use('/schedules', require('./routes/scheduleRoutes'));
 
 // Default Admin Setup
 const User = require('./models/User');

@@ -58,7 +58,7 @@ const EmployeeSchedule = () => {
 
   const saveChanges = async (employee) => {
     try {
-      await axios.put(`/api/schedules/${employee._id}`, {
+      await axios.put(API_ENDPOINTS.putUserSchedule(employee._id), {
         salary: employee.salary,
         weeklySchedule: employee.weeklySchedule,
       });

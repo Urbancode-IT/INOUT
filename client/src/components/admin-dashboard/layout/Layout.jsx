@@ -1,26 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import TopNavbar from './TopNavbar';
 import { Outlet } from 'react-router-dom';
 
 const Layout = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className="fixed w-64 h-full">
-        <Sidebar />
-      </div>
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
-      {/* Main Content */}
-      <div className="flex-1 ml-64">
-        {/* Top Navbar */}
-        <div className="fixed top-0 left-64 right-0 z-10 h-16 bg-white shadow">
-          <TopNavbar />
-        </div>
-
-        {/* Page Content */}
-        <main className="p-6 mt-16">
-          <Outlet />
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col transition-all duration-300 md:ml-64"> {/* ml-64 matches sidebar width */}
+        {/* Top navbar - fixed position */}
+        <TopNavbar setSidebarOpen={setSidebarOpen} />
+        
+        {/* Main content - padding-top to account for fixed navbar height */}
+        <main className="flex-1 pt-16 p-6 overflow-y-auto"> {/* pt-16 matches navbar height */}
+          <div className="max-w-7xl mx-auto">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

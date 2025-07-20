@@ -29,18 +29,18 @@ const ReportGenerator = ({ logs, allUsers, selectedDate }) => {
     );
     
     // Get absent users for selected date
-    const presentUserIds = selectedDateLogs
-      .filter(log => log.type === 'check-in')
-      .map(log => log.userId)
-      .filter(Boolean);
+    const presentUserIds = Array.from(new Set(
+  selectedDateLogs
+    .filter(log => log.type === 'check-in' && log.userId)
+    .map(log => log.userId)
+));
     const absentees = allUsers.filter(user => !presentUserIds.includes(user._id));
 
     // Report header
     doc.setFontSize(20);
     doc.setTextColor(40, 40, 40);
     doc.text('ATTENDANCE REPORT', 105, 20, { align: 'center' });
-    doc.setFontSize(12);
-      doc.text(`Total Absent: ${presentUserIds.length}`, 14, doc.lastAutoTable.finalY + 28);
+    
     // Report dates information
     doc.setFontSize(12);
     doc.setTextColor(100);
@@ -94,19 +94,25 @@ const ReportGenerator = ({ logs, allUsers, selectedDate }) => {
       log.checkOut?.officeName || '—'
     ]);
     
-    doc.autoTable({
-      startY: 60,
-      head: [['Employee', 'Check-In', 'Check-Out', 'Hours', 'Office (In)', 'Office (Out)']],
-      body: attendanceData,
-      theme: 'grid',
-      headStyles: { 
-        fillColor: [41, 128, 185],
-        textColor: 255,
-        fontStyle: 'bold'
-      },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
-      margin: { top: 10 }
-    });
+    
+   doc.autoTable({
+  startY: 60,
+  head: [['Employee', 'Check-In', 'Check-Out', 'Hours', 'Office (In)', 'Office (Out)']],
+  body: attendanceData,
+  theme: 'grid',
+  headStyles: { 
+    fillColor: [41, 128, 185],
+    textColor: 255,
+    fontStyle: 'bold'
+  },
+  alternateRowStyles: { fillColor: [245, 245, 245] },
+  margin: { top: 10 }
+});
+
+// ✅ Now `doc.lastAutoTable.finalY` exists
+doc.setFontSize(12);
+doc.text(`Total Present: ${presentUserIds.length}`, 14, doc.lastAutoTable.finalY + 10);
+
     
     // Absentees section
     if (absentees.length > 0) {
@@ -146,7 +152,11 @@ const ReportGenerator = ({ logs, allUsers, selectedDate }) => {
       doc.setFontSize(14);
       doc.text('No absent employees', 14, doc.lastAutoTable.finalY + 20);
     }
-    
+    doc.setFontSize(12);
+doc.text(`Total Employees: ${allUsers.length}`, 14, doc.lastAutoTable.finalY + 10);
+doc.text(`Total Present: ${presentUserIds.length}`, 14, doc.lastAutoTable.finalY + 16);
+doc.text(`Total Absent: ${allUsers.length - presentUserIds.length}`, 14, doc.lastAutoTable.finalY + 22);
+
     // Footer
     doc.setFontSize(10);
     doc.setTextColor(150);

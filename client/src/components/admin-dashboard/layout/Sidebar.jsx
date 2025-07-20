@@ -1,64 +1,154 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  FiHome,
-  FiUsers,
-  FiCalendar,
-  FiBarChart2,
-  FiSettings,
-  FiLogOut,
-  FiFileText,
-  FiDollarSign,
-  FiClock,
-  FiUploadCloud,
-  FiFile,
-  FiFileMinus,
-  FiCamera
+  FiHome, FiUsers, FiCalendar, FiBarChart2, FiSettings, FiLogOut,
+  FiFileText, FiDollarSign, FiCamera, FiChevronRight
 } from 'react-icons/fi';
 
 const menuItems = [
-  { label: 'Reports', icon: <FiCamera/>, path: '/admin' }, // ✅ Admin Dashboar
   { label: 'Dashboard', icon: <FiHome />, path: '/dashboard' },
-  { label: 'All Employees', icon: <FiUsers />, path: '/employees' },
-  { label: 'All Users (Cards)', icon: <FiUsers />, path: '/all-users' }, // ✅ New Card View Page
-  { label: 'Pending Approvals', icon: <FiUsers />, path: '/pending-users' },
-  { label: 'Daily Attendance', icon: <FiCalendar />, path: '/attendances' },
-  { label: 'Month wise Summary', icon: <FiBarChart2 />, path: '/reports' },
+  { label: 'Reports', icon: <FiCamera />, path: '/reports' },
+  {
+    label: 'User Management',
+    icon: <FiUsers />,
+    subItems: [
+      { label: 'All Employees', path: '/employees' },
+      { label: 'User Cards', path: '/all-users' },
+      { label: 'Pending Approvals', path: '/pending-users' }
+    ]
+  },
+  {
+    label: 'Attendance',
+    icon: <FiCalendar />,
+    subItems: [
+      { label: 'Daily Attendance', path: '/attendances' },
+      { label: 'Late Reports', path: '/late-reports' }
+    ]
+  },
+  {
+    label: 'Documents',
+    icon: <FiFileText />,
+    subItems: [
+      { label: 'Experience Letters', path: '/experience-letters' },
+      { label: 'Offer Letters', path: '/offer-letters' },
+      { label: 'Relieving Letters', path: '/relieving-letters' },
+      { label: 'Upload Documents', path: '/upload-documents' }
+    ]
+  },
   { label: 'Salary Details', icon: <FiDollarSign />, path: '/salary' },
-  { label: 'Late Reports', icon: <FiClock />, path: '/late-reports' },
+  { label: 'Reports', icon: <FiBarChart2 />, path: '/reports' },
   { label: 'Holiday List', icon: <FiCalendar />, path: '/holidays' },
-  { label: 'Experience Letters', icon: <FiFile />, path: '/experience-letters' },
-  { label: 'Offer Letters', icon: <FiFileText />, path: '/offer-letters' },
-  { label: 'Relieving Letters', icon: <FiFileMinus />, path: '/relieving-letters' },
-  { label: 'Upload Docs', icon: <FiUploadCloud />, path: '/upload-documents' },
-  { label: 'Company Settings', icon: <FiSettings />, path: '/settings' },
-  { label: 'Logout', icon: <FiLogOut />, path: '' }
+  { label: 'Settings', icon: <FiSettings />, path: '/settings' }
 ];
 
+const Sidebar = ({ isOpen, setIsOpen }) => {
+  const [expandedItems, setExpandedItems] = React.useState({});
 
-const Sidebar = () => {
+  const toggleItem = (label) => {
+    setExpandedItems(prev => ({
+      ...prev,
+      [label]: !prev[label]
+    }));
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+  };
+
   return (
-    <aside className="w-64 fixed top-0 left-0 h-full bg-white border-r shadow-sm z-50">
-      <div className="text-xl font-bold text-center py-5 border-b">
-        UC & JZ HR Panel
-      </div>
-      <nav className="mt-4 px-2 flex flex-col gap-1">
-        {menuItems.map((item, index) => (
-          <NavLink
-            key={index}
-            to={item.path}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-2 rounded-md transition text-sm font-medium ${
-                isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-              }`
+    <>
+      <aside
+        className={`fixed top-0 left-0 h-full w-64 bg-white text-gray-800 border-r z-40 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        } md:translate-x-0`}
+      >
+        <div className="text-xl font-semibold text-center py-4 border-b border-gray-200">
+          INOUT HR Portal
+        </div>
+
+        <nav className="mt-4 px-2 flex flex-col gap-1 overflow-y-auto h-[calc(100vh-80px)]">
+          {menuItems.map((item, index) => {
+            if (item.subItems) {
+              return (
+                <div key={index} className="mb-1">
+                  <button
+                    onClick={() => toggleItem(item.label)}
+                    className="flex items-center justify-between w-full px-4 py-2 rounded-md hover:bg-gray-100 text-sm font-medium transition"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">{item.icon}</span>
+                      <span>{item.label}</span>
+                    </div>
+                    <FiChevronRight
+                      className={`transition-transform duration-200 ${
+                        expandedItems[item.label] ? 'rotate-90' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {expandedItems[item.label] && (
+                    <div className="ml-8 mt-1 space-y-1">
+                      {item.subItems.map((subItem, subIndex) => (
+                        <NavLink
+                          key={subIndex}
+                          to={subItem.path}
+                          className={({ isActive }) =>
+                            `block px-3 py-2 rounded-md text-sm font-medium ${
+                              isActive
+                                ? 'bg-gray-200 text-black'
+                                : 'text-gray-700 hover:bg-gray-100'
+                            }`
+                          }
+                          onClick={() => setIsOpen(false)}
+                        >
+                          {subItem.label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
             }
-          >
-            <span className="text-lg">{item.icon}</span>
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
-      </nav>
-    </aside>
+
+            return (
+              <NavLink
+                key={index}
+                to={item.path}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-2 rounded-md text-sm font-medium transition ${
+                    isActive
+                      ? 'bg-gray-200 text-black'
+                      : 'text-gray-800 hover:bg-gray-100'
+                  }`
+                }
+                onClick={() => setIsOpen(false)}
+              >
+                <span className="text-lg">{item.icon}</span>
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
+
+          <div className="mt-auto pb-4 px-4">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 w-full px-4 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-gray-100"
+            >
+              <FiLogOut className="text-lg" />
+              <span>Logout</span>
+            </button>
+          </div>
+        </nav>
+      </aside>
+
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-30 z-30 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+    </>
   );
 };
 

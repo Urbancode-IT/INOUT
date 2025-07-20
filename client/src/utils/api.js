@@ -10,9 +10,17 @@ export const BASE_URL = 'https://uc-attendance-system-1ts2.onrender.com';
 // Auth & User APIs
 // -----------------
 export const API_ENDPOINTS = {
-  login: `${BASE_URL}/login`,
+  
   authLogin: `${BASE_URL}/api/auth/login`,
-  register: `${BASE_URL}/register`,
+   // -----------------
+  // Auth
+  // -----------------
+  login: `${BASE_URL}/auth/login`,
+  register: `${BASE_URL}/auth/register`,
+  // -----------------
+  // Users
+  // -----------------
+  
   getUsers: `${BASE_URL}/users`,
   getCurrentUser: `${BASE_URL}/users/me`,
   getUserById: (userId) => `${BASE_URL}/users/${userId}`,
@@ -45,9 +53,9 @@ export const API_ENDPOINTS = {
   // -----------------
   // Pending Users
   // -----------------
-  pendingUsers: `${BASE_URL}/admin/pending-users`,
-  approveUser: `${BASE_URL}/admin/approve`,     // Use: `${approveUser}/${userId}`
-  rejectUser: `${BASE_URL}/admin/reject`,       // Use: `${rejectUser}/${userId}`
+  pendingUsers: `${BASE_URL}/api/admin/pending-users`,
+  approveUser: `${BASE_URL}/api/admin/approve`,     // Use: `${approveUser}/${userId}`
+  rejectUser: `${BASE_URL}/api/admin/reject`,       // Use: `${rejectUser}/${userId}`
 
   // -----------------
   // Leave Management
@@ -130,4 +138,10 @@ export const register = async (userData) => {
 
 export const logout = () => {
   localStorage.removeItem('token');
+};
+// -----------------Schedule APIs-----------------
+export const getSchedules = async () => {
+  const response = await fetch(`${BASE_URL}/users/schedules`);
+  if (!response.ok) throw new Error('Failed to fetch schedules');
+  return response.json();
 };

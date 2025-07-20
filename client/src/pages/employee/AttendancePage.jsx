@@ -245,16 +245,16 @@ function AttendancePage() {
         </div>
       )}
 
-      <div className="mt-6">
-        <DateStrip selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
-      </div>
+      
 
       <div className="mt-8">
         <h3 className="text-lg font-semibold text-gray-700 mb-3">Today Attendance</h3>
-        <AttendanceCards attendanceData={attendanceHistory} />
+        <AttendanceCards attendanceData={attendanceHistory} /><br></br>
         <ActivityLog activities={filteredLogs} />
       </div>
-
+      <div className="mt-8">
+        <DateStrip selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+      </div>
       {isSelf && type && !isCapturing && (
         <div className="fixed bottom-6 left-6 right-6 flex justify-center z-30">
           <button

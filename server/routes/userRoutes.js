@@ -18,4 +18,5 @@ router.put('/:id', auth, role('admin'), userController.updateUser);
 
 // ✅ UPDATE salary
 router.put('/:id/salary', auth, role('admin'), userController.updateSalary);
+router.get('/schedules', auth, role('admin'), userController.getSchedules);
 module.exports = router;

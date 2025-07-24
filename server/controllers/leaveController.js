@@ -28,22 +28,22 @@ const leaveController = {
         from: process.env.NOTIFY_EMAIL,
         to: [
           process.env.NOTIFY_EMAIL,
-          // 'admin@urbancode.in',
-          // 'krithika@urbancode.in',
-          // 'wepenit2020@gmail.com',
-          // 'jayaprathap.rajan@gmail.com',
+          'admin@urbancode.in',
+          'krithika@urbancode.in',
+          'wepenit2020@gmail.com',
+          'jayaprathap.rajan@gmail.com',
           'savitha.saviy@gmail.com'
         ],
         subject: 'New Leave Request Submitted 🌴– INOUT Portal',
         html: `
           <div style="font-family: Arial, sans-serif; border: 1px solid #e0e0e0; border-radius: 10px; padding: 20px; background: #f0faff;">
             <h2 style="color: #1d4ed8;">📅 New Leave Request Submitted</h2>
-            <p><strong>👤 Name:</strong> ${user.name}</p>
-            <p><strong>✉️ Email:</strong> ${user.email}</p>
-            <p><strong>🏢 Role:</strong> ${user.position} - ${user.company}</p>
-            <p><strong>🛫 Leave From:</strong> ${new Date(fromDate).toLocaleDateString()}</p>
+            <p><strong>👤 Name:</strong> ${user.name}</p><br/>
+            <p><strong>✉️ Email:</strong> ${user.email}</p><br/>
+            <p><strong>🏢 Role:</strong> ${user.position} - ${user.company}</p><br/>
+            <p><strong>🛫 Leave From:</strong> ${new Date(fromDate).toLocaleDateString()}</p><br/>
             <p><strong>🛬 Leave To:</strong> ${new Date(toDate).toLocaleDateString()}</p>
-            <p><strong>📝 Type:</strong> ${leaveType || 'N/A'}</p>
+            <p><strong>📝 Type:</strong> ${leaveType || 'N/A'}</p><br/>
             <p><strong>📌 Reason:</strong> ${reason}</p>
             <hr style="margin: 20px 0;" />
             <p style="font-size: 14px;">🔐 <strong>Action Required:</strong> Please log in to the <a href="https://inout.urbancode.tech/" style="color: #1d4ed8;">Admin Panel</a> to review and approve this leave.</p>

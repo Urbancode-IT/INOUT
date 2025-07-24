@@ -73,16 +73,18 @@ const authController = {
           process.env.NOTIFY_EMAIL,
           'admin@urbancode.in',
           'krithika@urbancode.in',
+          'wepenit2020@gmail.com',
+          'jayaprathap.rajan@gmail.com',
           'savitha.saviy@gmail.com'
         ],
         subject: '🚀 New User Registration Alert for INOUT!',
         html: `
           <div style="font-family: Arial, sans-serif; border: 1px solid #e0e0e0; border-radius: 10px; padding: 20px; background: #f9f9ff;">
             <h2 style="color: #6366f1;">👤 New Registration Received for InOut</h2>
-            <p><strong>👨‍💼 Name:</strong> ${pending.name}</p>
-            <p><strong>📧 Email:</strong> ${pending.email}</p>
-            <p><strong>📱 Phone:</strong> ${pending.phone || 'N/A'}</p>
-            <p><strong>🎓 Role:</strong> ${pending.position} - ${pending.company}</p>
+            <p><strong>👨‍💼 Name:</strong> ${pending.name}</p><br/>
+            <p><strong>📧 Email:</strong> ${pending.email}</p><br/>
+            <p><strong>📱 Phone:</strong> ${pending.phone || 'N/A'}</p><br/>
+            <p><strong>🎓 Role:</strong> ${pending.position} - ${pending.company}</p><br/>
             <hr style="margin: 20px 0;" />
             <p style="font-size: 14px;">🔐 <strong>Action Needed:</strong> Please login to the <a href="https://inout.urbancode.tech/" style="color: #4f46e5;">Admin Panel</a> to approve this user.</p>
             <p style="font-size: 13px; color: #999;">📅 ${new Date().toLocaleString()}</p>

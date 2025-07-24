@@ -3,6 +3,7 @@
 // -----------------------------
 const LeaveRequest = require('../models/LeaveRequest');
 const transporter = require('../config/emailConfig');
+const User = require('../models/User');
 
 const leaveController = {
   applyLeave: async (req, res) => {
@@ -11,7 +12,8 @@ const leaveController = {
       if (!fromDate || !toDate || !reason) {
         return res.status(400).json({ error: 'Missing fields' });
       }
-      const user = req.user;
+      const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
       const leave = new LeaveRequest({
         user: user._id,
         fromDate,
@@ -26,11 +28,13 @@ const leaveController = {
         from: process.env.NOTIFY_EMAIL,
         to: [
           process.env.NOTIFY_EMAIL,
-          'admin@urbancode.in',
-          'krithika@urbancode.in',
+          // 'admin@urbancode.in',
+          // 'krithika@urbancode.in',
+          // 'wepenit2020@gmail.com',
+          // 'jayaprathap.rajan@gmail.com',
           'savitha.saviy@gmail.com'
         ],
-        subject: '🌴 New Leave Request Submitted – INOUT Portal',
+        subject: 'New Leave Request Submitted 🌴– INOUT Portal',
         html: `
           <div style="font-family: Arial, sans-serif; border: 1px solid #e0e0e0; border-radius: 10px; padding: 20px; background: #f0faff;">
             <h2 style="color: #1d4ed8;">📅 New Leave Request Submitted</h2>

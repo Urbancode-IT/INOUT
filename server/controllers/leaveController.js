@@ -31,7 +31,7 @@ const leaveController = {
           'admin@urbancode.in',
           'krithika@urbancode.in',
           'wepenit2020@gmail.com',
-          'jayaprathap.rajan@gmail.com',
+          'jayaprathap.rajan27@gmail.com',
           'savitha.saviy@gmail.com'
         ],
         subject: 'New Leave Request Submitted 🌴– INOUT Portal',

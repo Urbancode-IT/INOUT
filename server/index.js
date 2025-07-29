@@ -28,7 +28,7 @@ app.use('/uploads', express.static(uploadsPath, {
 // Ping Route
 app.get('/ping', (req, res) => res.send('pong'));
 
-// Route Mounts (✅ Modularized)
+// Route Mounts 
 app.use('/attendance', require('./routes/attendanceRoutes'));
 app.use('/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
@@ -61,7 +61,7 @@ setupAdmin();
 
 app.get('/employeesAttendance',authMiddleware, async (req, res) => {
    try {
-    const users = await User.find({ role: 'employee' }, '_id name email role');
+    const users = await User.find({ role: 'employee' }, '_id name email role company position');
     res.json(users);
   } catch (err) {
     console.error('Error fetching users:', err);

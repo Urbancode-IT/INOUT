@@ -44,14 +44,21 @@ const adminController = {
       const filteredLogs = logs.filter(log => log.user !== null);
 
       const formatted = filteredLogs.map(log => ({
-        employeeName: log.user.name,
-        userId: log.user._id,
-        role: log.user.role,
-        type: log.type,
-        timestamp: log.timestamp,
-        officeName: log.officeName || 'Outside Office',
-        image: log.image || ''
-      }));
+      employeeName: log.user.name,
+      userId: log.user._id,
+      role: log.user.role,
+      position: log.user.position,
+      department: log.user.department,
+      company: log.user.company,
+      bankDetails: {
+        bankingName: log.user.bankDetails?.bankingName || '',
+        accountNumber: log.user.bankDetails?.bankAccountNumber || ''
+      },
+      type: log.type,
+      timestamp: log.timestamp,
+      officeName: log.officeName || 'Outside Office',
+      image: log.image || ''
+    }));
 
       res.json(formatted);
     } catch (error) {

@@ -4,7 +4,7 @@
 const LeaveRequest = require('../models/LeaveRequest');
 const transporter = require('../config/emailConfig');
 const User = require('../models/User');
-
+const axios = require('axios');
 
 const leaveController = {
   applyLeave: async (req, res) => {
@@ -26,7 +26,7 @@ const leaveController = {
       await leave.save();
 
       const mailOptions = {
-        from: process.env.NOTIFY_EMAIL,
+        from:  `InOut Portal -<${process.env.NOTIFY_EMAIL}>`,
         to: [
           process.env.NOTIFY_EMAIL,
           'admin@urbancode.in',
@@ -47,19 +47,23 @@ const leaveController = {
         <div style="display: grid; grid-template-columns: 120px 1fr; gap: 12px 0;">
             <div style="font-weight: 600; color: #4b5563;">👤 Employee:</div>
             <div>${user.name}</div>
-            
+            <br />
             <div style="font-weight: 600; color: #4b5563;">✉️ Email:</div>
             <div>${user.email}</div>
+            <br />
             
             <div style="font-weight: 600; color: #4b5563;">🏢 Position:</div>
             <div>${user.position} - ${user.company}</div>
-            
+            <br />
+
             <div style="font-weight: 600; color: #4b5563;">🛫 Leave Dates:</div>
             <div>${new Date(fromDate).toLocaleDateString()} to ${new Date(toDate).toLocaleDateString()} (${Math.ceil((new Date(toDate) - new Date(fromDate)) / (1000 * 60 * 60 * 24) + 1)} days)</div>
+            <br />
             
             <div style="font-weight: 600; color: #4b5563;">📝 Leave Type:</div>
             <div>${leaveType || 'N/A'}</div>
-            
+            <br />
+
             <div style="font-weight: 600; color: #4b5563;">📌 Reason:</div>
             <div>${reason}</div>
         </div>
@@ -89,6 +93,54 @@ const leaveController = {
       };
 
       transporter.sendMail(mailOptions);
+
+
+// List of admin WhatsApp numbers (with country code, no "+")
+// const adminNumbers = [
+//     '919003177131', //Sivagaminathan
+//     '919650308989',  // Krithika
+//     '919080258870',  // Jayaprathap
+//     '918939514410'   // Savitha
+// ];
+
+// Dynamic WhatsApp message template
+// function createWhatsAppMessage(user, fromDate, toDate, leaveType, reason) {
+//     const days = Math.ceil((new Date(toDate) - new Date(fromDate)) / (1000 * 60 * 60 * 24)) + 1;
+//     return `
+// 🚀 *New Leave Request - ${user.company}* 🚀
+
+// *Employee:* ${user.name}
+// *Position:* ${user.position}
+// *Dates:* ${new Date(fromDate).toLocaleDateString()} → ${new Date(toDate).toLocaleDateString()} (${days} days)
+// *Type:* ${leaveType || 'N/A'}
+// *Reason:* ${reason}
+
+// 👉 _Approve/Reject:_ https://inout.urbancode.tech/
+
+// _Submitted: ${new Date().toLocaleString()}_
+//     `.trim();
+// }
+
+// Send to all admins
+// async function notifyAdminsOnWhatsApp() {
+//     const message = createWhatsAppMessage(user, fromDate, toDate, leaveType, reason);
+    
+//     for (const number of adminNumbers) {
+//         try {
+//             await axios.post('https://api.askeva.com/v1/whatsapp/messages', {
+//                 apiKey: process.env.ASKEVA_API_KEY,
+//                 to: number,
+//                 message: message,
+//                 template: "urgent_alert"  // Optional template name
+//             });
+//             console.log(`Sent to ${number}`);
+//         } catch (error) {
+//             console.error(`Failed for ${number}:`, error.message);
+//             // Continue to next number even if one fails
+//         }
+//     }
+// }
+// notifyAdminsOnWhatsApp();
       res.status(201).json({ message: 'Leave request submitted' });
     } catch (err) {
       console.error('Leave apply error:', err);
@@ -128,7 +180,7 @@ const leaveController = {
     }
    
       const mailOptions = {
-              from: process.env.NOTIFY_EMAIL,
+              from:  `InOut Portal - <${process.env.NOTIFY_EMAIL}>`,
               to: updated.user.email,
               subject:  `Your Leave Request Has Been ${status}`,
               html: `

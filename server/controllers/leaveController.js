@@ -4,6 +4,7 @@
 const LeaveRequest = require('../models/LeaveRequest');
 const transporter = require('../config/emailConfig');
 const User = require('../models/User');
+const transporter = require('../config/emailConfig');
 
 const leaveController = {
   applyLeave: async (req, res) => {
@@ -81,11 +82,127 @@ const leaveController = {
         req.params.id,
         { status },
         { new: true }
-      );
+      ).populate('user', 'name email');
 
       if (!updated) {
         return res.status(404).json({ error: 'Leave request not found' });
       }
+        // Check if user has email
+    if (!updated.user?.email) {
+      return res.status(400).json({ error: 'No email found for this user' });
+    }
+   
+      const mailOptions = {
+              from: process.env.NOTIFY_EMAIL,
+              to: updated.user.email,
+              subject:  `Your Leave Request Has Been ${status}`,
+              html: `
+                <!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .email-container {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 25px;
+            background-color: #ffffff;
+        }
+        .header {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .details {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .detail-row {
+            margin-bottom: 8px;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #495057;
+            display: inline-block;
+            width: 100px;
+        }
+        .footer {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">Leave Request Update</div>
+        
+        <p>Hi ${updated.user.name || 'Employee'},</p>
+        
+        <p>Your leave request has been reviewed:</p>
+        
+        <div class="status ${status.toLowerCase()}">
+            ${status.toUpperCase()}
+        </div>
+        
+        <div class="details">
+            <div class="detail-row">
+                <span class="detail-label">Dates:</span>
+                ${updated.fromDate.toDateString()} to ${updated.toDate.toDateString()}
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Leave Type:</span>
+                ${updated.leaveType}
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Reason:</span>
+                ${updated.reason}
+            </div>
+        </div>
+        
+        <p>If you have any questions about this decision, please contact HR.</p>
+        
+        <div class="footer">
+            <p>Best regards,<br><strong>InOut Team</strong></p>
+        </div>
+    </div>
+</body>
+</html>
+      `
+            };
+      
+            await transporter.sendMail(mailOptions);
 
       res.json({ message: `Leave ${status.toLowerCase()}`, request: updated });
     } catch (err) {

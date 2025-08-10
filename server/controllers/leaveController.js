@@ -37,23 +37,58 @@ const leaveController = {
         ],
         subject: 'New Leave Request Submitted 🌴– INOUT Portal',
         html: `
-          <div style="font-family: Arial, sans-serif; border: 1px solid #e0e0e0; border-radius: 10px; padding: 20px; background: #f0faff;">
-            <h2 style="color: #1d4ed8;">📅 New Leave Request Submitted</h2>
-            <p><strong>👤 Name:</strong> ${user.name}</p><br/>
-            <p><strong>✉️ Email:</strong> ${user.email}</p><br/>
-            <p><strong>🏢 Role:</strong> ${user.position} - ${user.company}</p><br/>
-            <p><strong>🛫 Leave From:</strong> ${new Date(fromDate).toLocaleDateString()}</p><br/>
-            <p><strong>🛬 Leave To:</strong> ${new Date(toDate).toLocaleDateString()}</p>
-            <p><strong>📝 Type:</strong> ${leaveType || 'N/A'}</p><br/>
-            <p><strong>📌 Reason:</strong> ${reason}</p>
-            <hr style="margin: 20px 0;" />
-            <p style="font-size: 14px;">🔐 <strong>Action Required:</strong> Please log in to the <a href="https://inout.urbancode.tech/" style="color: #1d4ed8;">Admin Panel</a> to review and approve this leave.</p>
-            <p style="font-size: 13px; color: #666;">🕒 Submitted on: ${new Date().toLocaleString()}</p>
-          </div>
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e8ff; border-radius: 12px; padding: 25px; background: linear-gradient(to bottom, #f7faff, #ffffff); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
+    <div style="display: flex; align-items: center; margin-bottom: 20px;">
+        <div style="background-color: #1d4ed8; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 20px;">📅</div>
+        <h2 style="color: #1d4ed8; margin: 0; font-size: 22px;">New Leave Request Submitted</h2>
+    </div>
+    
+    <div style="background-color: #f8fafc; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: 120px 1fr; gap: 12px 0;">
+            <div style="font-weight: 600; color: #4b5563;">👤 Employee:</div>
+            <div>${user.name}</div>
+            
+            <div style="font-weight: 600; color: #4b5563;">✉️ Email:</div>
+            <div>${user.email}</div>
+            
+            <div style="font-weight: 600; color: #4b5563;">🏢 Position:</div>
+            <div>${user.position} - ${user.company}</div>
+            
+            <div style="font-weight: 600; color: #4b5563;">🛫 Leave Dates:</div>
+            <div>${new Date(fromDate).toLocaleDateString()} to ${new Date(toDate).toLocaleDateString()} (${Math.ceil((new Date(toDate) - new Date(fromDate)) / (1000 * 60 * 60 * 24) + 1)} days)</div>
+            
+            <div style="font-weight: 600; color: #4b5563;">📝 Leave Type:</div>
+            <div>${leaveType || 'N/A'}</div>
+            
+            <div style="font-weight: 600; color: #4b5563;">📌 Reason:</div>
+            <div>${reason}</div>
+        </div>
+    </div>
+    
+    <div style="background-color: #eef2ff; border-left: 4px solid #1d4ed8; padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 20px;">
+        <p style="margin: 0; font-weight: 600; color: #1d4ed8; display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 18px;">🔐</span>
+            <span>Action Required: Review this leave request</span>
+        </p>
+        <p style="margin: 10px 0 0 0; font-size: 14px; color: #4b5563;">
+            Please log in to the <a href="https://inout.urbancode.tech/" style="color: #1d4ed8; text-decoration: none; font-weight: 600;">Admin Panel</a> to approve or reject this request.
+        </p>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 15px;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+            <span>🕒</span>
+            <span>Submitted on ${new Date().toLocaleString()}</span>
+        </div>
+        <div style="font-weight: 600;">
+            ${user.company} , InOut Team
+        </div>
+    </div>
+</div>
         `
       };
 
-      await transporter.sendMail(mailOptions);
+      transporter.sendMail(mailOptions);
       res.status(201).json({ message: 'Leave request submitted' });
     } catch (err) {
       console.error('Leave apply error:', err);
@@ -191,7 +226,7 @@ const leaveController = {
             </div>
         </div>
         
-        <p>If you have any questions about this decision, please contact HR.</p>
+        <p>If you have any questions about this decision, please contact Management.</p>
         
         <div class="footer">
             <p>Best regards,<br><strong>InOut Team</strong></p>

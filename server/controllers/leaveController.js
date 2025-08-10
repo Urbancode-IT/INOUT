@@ -4,7 +4,7 @@
 const LeaveRequest = require('../models/LeaveRequest');
 const transporter = require('../config/emailConfig');
 const User = require('../models/User');
-const axios = require('axios');
+
 
 const leaveController = {
   applyLeave: async (req, res) => {

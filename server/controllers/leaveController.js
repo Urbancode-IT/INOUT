@@ -96,51 +96,51 @@ const leaveController = {
 
 
 // List of admin WhatsApp numbers (with country code, no "+")
-// const adminNumbers = [
-//     '919003177131', //Sivagaminathan
-//     '919650308989',  // Krithika
-//     '919080258870',  // Jayaprathap
-//     '918939514410'   // Savitha
-// ];
+const adminNumbers = [
+    '919003177131', //Sivagaminathan
+    '919650308989',  // Krithika
+    '919080258870',  // Jayaprathap
+    '918939514410'   // Savitha
+];
 
 // Dynamic WhatsApp message template
-// function createWhatsAppMessage(user, fromDate, toDate, leaveType, reason) {
-//     const days = Math.ceil((new Date(toDate) - new Date(fromDate)) / (1000 * 60 * 60 * 24)) + 1;
-//     return `
-// 🚀 *New Leave Request - ${user.company}* 🚀
+function createWhatsAppMessage(user, fromDate, toDate, leaveType, reason) {
+    const days = Math.ceil((new Date(toDate) - new Date(fromDate)) / (1000 * 60 * 60 * 24)) + 1;
+    return `
+🚀 *New Leave Request - ${user.company}* 🚀
 
-// *Employee:* ${user.name}
-// *Position:* ${user.position}
-// *Dates:* ${new Date(fromDate).toLocaleDateString()} → ${new Date(toDate).toLocaleDateString()} (${days} days)
-// *Type:* ${leaveType || 'N/A'}
-// *Reason:* ${reason}
+*Employee:* ${user.name}
+*Position:* ${user.position}
+*Dates:* ${new Date(fromDate).toLocaleDateString()} → ${new Date(toDate).toLocaleDateString()} (${days} days)
+*Type:* ${leaveType || 'N/A'}
+*Reason:* ${reason}
 
-// 👉 _Approve/Reject:_ https://inout.urbancode.tech/
+👉 _Approve/Reject:_ https://inout.urbancode.tech/
 
-// _Submitted: ${new Date().toLocaleString()}_
-//     `.trim();
-// }
+_Submitted: ${new Date().toLocaleString()}_
+    `.trim();
+}
 
 // Send to all admins
-// async function notifyAdminsOnWhatsApp() {
-//     const message = createWhatsAppMessage(user, fromDate, toDate, leaveType, reason);
+async function notifyAdminsOnWhatsApp() {
+    const message = createWhatsAppMessage(user, fromDate, toDate, leaveType, reason);
     
-//     for (const number of adminNumbers) {
-//         try {
-//             await axios.post('https://api.askeva.com/v1/whatsapp/messages', {
-//                 apiKey: process.env.ASKEVA_API_KEY,
-//                 to: number,
-//                 message: message,
-//                 template: "urgent_alert"  // Optional template name
-//             });
-//             console.log(`Sent to ${number}`);
-//         } catch (error) {
-//             console.error(`Failed for ${number}:`, error.message);
-//             // Continue to next number even if one fails
-//         }
-//     }
-// }
-// notifyAdminsOnWhatsApp();
+    for (const number of adminNumbers) {
+        try {
+            await axios.post('https://api.askeva.com/v1/whatsapp/messages', {
+                apiKey: process.env.ASKEVA_API_KEY,
+                to: number,
+                message: message,
+                template: "urgent_alert"  // Optional template name
+            });
+            console.log(`Sent to ${number}`);
+        } catch (error) {
+            console.error(`Failed for ${number}:`, error.message);
+            // Continue to next number even if one fails
+        }
+    }
+}
+notifyAdminsOnWhatsApp();
       res.status(201).json({ message: 'Leave request submitted' });
     } catch (err) {
       console.error('Leave apply error:', err);

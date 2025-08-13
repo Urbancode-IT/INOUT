@@ -128,7 +128,7 @@ async function notifyAdminsOnWhatsApp() {
     
     for (const number of adminNumbers) {
         try {
-            await axios.post('https://api.askeva.com/v1/whatsapp/messages', {
+            await axios.post('https://backend.askeva.io/v1/message/send-message', {
                 apiKey: process.env.ASKEVA_API_KEY,
                 to: number,
                 message: message,

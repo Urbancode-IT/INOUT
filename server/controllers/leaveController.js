@@ -128,8 +128,7 @@ async function notifyAdminsOnWhatsApp() {
     
     for (const number of adminNumbers) {
         try {
-            await axios.post('https://backend.askeva.io/v1/message/send-message', {
-                apiKey: process.env.ASKEVA_API_KEY,
+            await axios.post(`https://backend.askeva.io/v1/message/send-message?token=${process.env.ASKEVA_API_KEY}`, {
                 to: number,
                 message: message,
                 template: "urgent_alert"  // Optional template name

@@ -106,40 +106,45 @@ const adminNumbers = [
 
 // Dynamic WhatsApp message template
 function createWhatsAppMessage(user, fromDate, toDate, leaveType, reason) {
-    const days = Math.ceil((new Date(toDate) - new Date(fromDate)) / (1000 * 60 * 60 * 24)) + 1;
-    return `
-🚀 *New Leave Request - ${user.company}* 🚀
+    const days =
+        Math.ceil(
+            (new Date(toDate) - new Date(fromDate)) /
+            (1000 * 60 * 60 * 24)
+        ) + 1;
+
+    return `🚀 *New Leave Request - ${user.company}* 🚀
 
 *Employee:* ${user.name}
 *Position:* ${user.position}
 *Dates:* ${new Date(fromDate).toLocaleDateString()} → ${new Date(toDate).toLocaleDateString()} (${days} days)
 *Type:* ${leaveType || 'N/A'}
-*Reason:* ${reason}
+*Reason:* ${reason || 'No reason provided'}
 
 👉 _Approve/Reject:_ https://inout.urbancode.tech/
 
-_Submitted: ${new Date().toLocaleString()}_
-    `.trim();
+_Submitted on:_ ${new Date().toLocaleString()}`;
 }
-
-// Send to all admins
+//send to all admins
 async function notifyAdminsOnWhatsApp() {
     const message = createWhatsAppMessage(user, fromDate, toDate, leaveType, reason);
     
     for (const number of adminNumbers) {
         try {
-            await axios.post(`https://backend.askeva.io/v1/message/send-message?token=${process.env.ASKEVA_API_KEY}`, {
-                to: number,
-                message: message,
-                template: "urgent_alert"  // Optional template name
-            });
+            await axios.post(
+                `https://backend.askeva.io/v1/message/send-message?token=${process.env.ASKEVA_API_KEY}`,
+                {
+                    phone: `+${number}`, // AskEva expects string with plus sign
+                    message: message
+                }
+            );
             console.log(`Sent to ${number}`);
         } catch (error) {
-            console.error(`Failed for ${number}:`, error.message);
-            // Continue to next number even if one fails
+            console.error(`Failed for ${number}:`, error.response?.data || error.message);
         }
     }
 }
+
+
 notifyAdminsOnWhatsApp();
       res.status(201).json({ message: 'Leave request submitted' });
     } catch (err) {

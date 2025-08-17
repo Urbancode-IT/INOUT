@@ -89,8 +89,42 @@ export const API_ENDPOINTS = {
   // Misc
   // -----------------
   uploadPath: `${BASE_URL}/uploads`,
+
+
+
+  // -----------------
+  // Payslip APIs
+  // -----------------
+  createPayslip: `${BASE_URL}/api/payslips`,              // POST new payslip
+  getPayslips: `${BASE_URL}/api/payslips`,               // GET all payslips
+  // getPayslipById: (id) => `${BASE_URL}/api/payslips/${id}`, // GET payslip by ID
+  // getPayslipsByUser: (userId) => `${BASE_URL}/api/payslips/user/${userId}`, // GET all payslips for one user
 };
 
+// -----------------
+// Helper Functions
+// -----------------
+
+// Create Payslip
+export const createPayslip = async (payslipData) => {
+  const response = await fetch(API_ENDPOINTS.postPayslip, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`, // if protected
+    },
+    body: JSON.stringify(payslipData),
+  });
+  if (!response.ok) throw new Error('Failed to create payslip');
+  return response.json();
+};
+
+// Get All Payslips
+export const getPayslips = async () => {
+  const response = await fetch(API_ENDPOINTS.getPayslips);
+  if (!response.ok) throw new Error('Failed to fetch payslips');
+  return response.json();
+};
 // -----------------
 // Helper Functions (Optional)
 // -----------------

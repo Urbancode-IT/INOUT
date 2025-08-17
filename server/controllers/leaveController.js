@@ -105,41 +105,59 @@ const adminNumbers = [
 ];
 
 // Dynamic WhatsApp message template
-function createWhatsAppMessage(user, fromDate, toDate, leaveType, reason) {
+// Dynamic WhatsApp message template
+function createWhatsAppTemplatePayload(number, user, fromDate, toDate, leaveType, reason) {
     const days =
         Math.ceil(
             (new Date(toDate) - new Date(fromDate)) /
             (1000 * 60 * 60 * 24)
         ) + 1;
 
-    return `🚀 *New Leave Request - ${user.company}* 🚀
-
-*Employee:* ${user.name}
-*Position:* ${user.position}
-*Dates:* ${new Date(fromDate).toLocaleDateString()} → ${new Date(toDate).toLocaleDateString()} (${days} days)
-*Type:* ${leaveType || 'N/A'}
-*Reason:* ${reason || 'No reason provided'}
-
-👉 _Approve/Reject:_ https://inout.urbancode.tech/
-
-_Submitted on:_ ${new Date().toLocaleString()}`;
+    return {
+        to: number, // No '+' prefix, AskEva expects digits only
+        type: "template",
+        template: {
+            language: {
+                policy: "deterministic",
+                code: "en"
+            },
+            name: "leave_request_notification", // replace with your approved template name
+            components: [
+                {
+                    type: "body",
+                    parameters: [
+                        { type: "text", text: user.company },
+                        { type: "text", text: user.name },
+                        { type: "text", text: user.position },
+                        { type: "text", text: `${new Date(fromDate).toLocaleDateString()} → ${new Date(toDate).toLocaleDateString()}` },
+                        { type: "text", text: `${days} days` },
+                        { type: "text", text: leaveType || 'N/A' },
+                        { type: "text", text: reason || 'No reason provided' },
+                        { type: "text", text: `https://inout.urbancode.tech/` },
+                        { type: "text", text: new Date().toLocaleString() }
+                    ]
+                }
+            ]
+        }
+    };
 }
-//send to all admins
-async function notifyAdminsOnWhatsApp() {
-    const message = createWhatsAppMessage(user, fromDate, toDate, leaveType, reason);
-    
+// Send to all admins
+async function notifyAdminsOnWhatsApp(user, fromDate, toDate, leaveType, reason) {
     for (const number of adminNumbers) {
         try {
-            await axios.post(
+            const payload = createWhatsAppTemplatePayload(number, user, fromDate, toDate, leaveType, reason);
+
+            const res = await axios.post(
                 `https://backend.askeva.io/v1/message/send-message?token=${process.env.ASKEVA_API_KEY}`,
+                payload,
                 {
-                    phone: `+${number}`, // AskEva expects string with plus sign
-                    message: message
+                    headers: { "Content-Type": "application/json" }
                 }
             );
-            console.log(`Sent to ${number}`);
+
+            console.log(`✅ Sent to ${number}:`, res.data);
         } catch (error) {
-            console.error(`Failed for ${number}:`, error.response?.data || error.message);
+            console.error(`❌ Failed for ${number}:`, error.response?.data || error.message);
         }
     }
 }

@@ -6,7 +6,7 @@ export const BASE_URL = 'https://uc-attendance-system-1ts2.onrender.com';
 // src/utils/api.js
 
 // Base URL
-// export const BASE_URL = 'http://localhost:5000'; // Change to your live domain when needed
+//export const BASE_URL = 'http://localhost:5000'; // Change to your live domain when needed'https://uc-attendance-system-1ts2.onrender.com'
 
 // -----------------
 // Auth & User APIs
@@ -73,6 +73,9 @@ export const API_ENDPOINTS = {
   // -----------------
   addHoliday: `${BASE_URL}/api/holidays`,
   getHolidays: `${BASE_URL}/api/holidays`,
+  getHolidaysByMonth: `${BASE_URL}/api/holidays/filter`,
+  deleteHoliday: (id) => `${BASE_URL}/api/holidays/delete/${id}`,
+  editHoliday: (id) => `${BASE_URL}/api/holidays/update/${id}`,
 
   // -----------------
   // Tasks
@@ -106,18 +109,7 @@ export const API_ENDPOINTS = {
 // -----------------
 
 // Create Payslip
-export const createPayslip = async (payslipData) => {
-  const response = await fetch(API_ENDPOINTS.postPayslip, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`, // if protected
-    },
-    body: JSON.stringify(payslipData),
-  });
-  if (!response.ok) throw new Error('Failed to create payslip');
-  return response.json();
-};
+
 
 // Get All Payslips
 export const getPayslips = async () => {

@@ -1,27 +1,33 @@
-// models/Payslip.js
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
-const payslipSchema = new mongoose.Schema({
-  employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+const PayslipSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  employeeId: String,
   employeeDetails: {
     name: String,
-    id: String,
     designation: String,
     department: String,
+    company: String,
+    dateOfJoining: { type: Date },
     bankAccountName: String,
     bankAccountNumber: String,
+  },
+  attendanceSummary: {
     totalDays: Number,
+    workingDays: Number,
     presentDays: Number,
     absentDays: Number,
+    leaveDays: Number,
+    lateDays: Number,
+    halfDays: Number,
   },
-  incomes: { type: Map, of: Number },       // dynamic key:value
-  deductions: { type: Map, of: Number },    // dynamic key:value
+  incomes: { type: Map, of: Number },
+  deductions: { type: Map, of: Number },
   totalIncome: Number,
   totalDeductions: Number,
   netPay: Number,
-  month: String,   // e.g. "August"
-  year: Number,    // e.g. 2025
-  pdfUrl: String,  // (optional) if you want to store uploaded PDF path
-}, { timestamps: true });
+  month: String,
+  year: Number,
+});
 
-export default mongoose.model("Payslip", payslipSchema);
+module.exports = mongoose.model("Payslip", PayslipSchema);

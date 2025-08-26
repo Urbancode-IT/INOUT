@@ -38,7 +38,7 @@ const adminController = {
         .populate({
           path: 'user',
           match: { role: 'employee' },
-          select: 'name email role company position department bankDetails dateOfJoining'
+          select: '_id name email role company position department bankDetails dateOfJoining'
         });
 
       const filteredLogs = logs.filter(log => log.user !== null);
@@ -50,6 +50,7 @@ const adminController = {
       position: log.user.position,
       department: log.user.department,
       company: log.user.company,
+      dateOfJoining: log.user.dateOfJoining,
       bankDetails: {
         bankingName: log.user.bankDetails?.bankingName || '',
         accountNumber: log.user.bankDetails?.bankAccountNumber || ''

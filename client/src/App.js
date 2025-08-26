@@ -19,6 +19,7 @@ import Employees from './pages/admin/Employees';
 import Salary from './pages/admin/Salary';
 import Attendance from './pages/admin/Attendance';
 import Reports from './pages/admin/Reports';
+import LeaveRequestsAdmin from './pages/admin/LeaveRequests';
 
 
 import AttendancePage from './pages/employee/AttendancePage';
@@ -28,7 +29,8 @@ import PendingUsers from './pages/admin/PendingUsers';
 import AllUsers from './pages/admin/AllUsers';
 import Holidays from './pages/admin/Holidays';
 import TaskManagerPage from './pages/employee/TaskManagerPage';
-
+import PayslipGenerator from './pages/admin/PayslipGenerator';
+import PayslipList from './pages/admin/PayslipList';
 // Layout
 import Layout from './components/admin-dashboard/layout/Layout';
 
@@ -67,19 +69,21 @@ function App() {
         <Route path="/attendance/:userId" element={<AttendancePage />} />
         <Route path="/apply-leave" element={<Leave />} />
         <Route path="/task-manager" element={<TaskManagerPage />} />
+        
 
         {/* Protected Admin Layout Wrapper */}
         <Route element={<Layout />}>
           <Route path="/admin" element={<DashSavi />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/employees" element={<Employees />} />
-          <Route path="/salary" element={<Salary />} />
+          <Route path="/salaryhistory" element={<PayslipList />} />
           <Route path="/attendances" element={<Attendance />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/pending-users" element={<PendingUsers />} />
           <Route path="/all-users" element={<AllUsers />} />
           <Route path="/holidays" element={<Holidays />} />
-
+          <Route path="/payslip" element={<PayslipGenerator />} />
+          <Route path="/leave-requests" element={<LeaveRequestsAdmin />} />
           {/* Add other admin routes here */}
           <Route path="/edit-user" element={<EditUser />} />
         </Route>

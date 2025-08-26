@@ -3,6 +3,9 @@ import autoTable from 'jspdf-autotable';
 import { FiDownload } from 'react-icons/fi';
 
 const ReportGenerator = ({ logs, allUsers, selectedDate }) => {
+
+
+  console.log('ReportGenerator logs:', logs);
   const calculateHours = (checkIn, checkOut) => {
     const start = new Date(checkIn.timestamp);
     const end = new Date(checkOut.timestamp);
@@ -130,12 +133,13 @@ doc.text(`Total Present: ${presentUserIds.length}`, 14, doc.lastAutoTable.finalY
       
       const absentData = absentees.map(user => [
         user.name,
-        user.email
+        user.position,
+        user.company
       ]);
       
       doc.autoTable({
         startY: doc.lastAutoTable.finalY + 35,
-        head: [['Name', 'Email']],
+        head: [['Name', 'Designation', 'Company']],
         body: absentData,
         theme: 'grid',
         headStyles: { 

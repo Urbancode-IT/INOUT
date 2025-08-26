@@ -7,21 +7,22 @@ import {
 
 const menuItems = [
   { label: 'Dashboard', icon: <FiHome />, path: '/dashboard' },
-  { label: 'Reports', icon: <FiCamera />, path: '/reports' },
+  { label: 'Monthly Reports', icon: <FiCamera />, path: '/reports' },
   {
     label: 'User Management',
     icon: <FiUsers />,
     subItems: [
-      { label: 'All Employees', path: '/employees' },
       { label: 'User Cards', path: '/all-users' },
+      { label: 'Employees Schedules', path: '/employees' },
+      
       { label: 'Pending Approvals', path: '/pending-users' }
     ]
   },
   {
-    label: 'Attendance',
+    label: 'Leaves & Lates',
     icon: <FiCalendar />,
     subItems: [
-      { label: 'Daily Attendance', path: '/attendances' },
+      { label: 'Leave Records', path: '/leave-requests' },
       { label: 'Late Reports', path: '/late-reports' }
     ]
   },
@@ -35,8 +36,8 @@ const menuItems = [
       { label: 'Upload Documents', path: '/upload-documents' }
     ]
   },
-  { label: 'Salary Details', icon: <FiDollarSign />, path: '/salary' },
-  { label: 'Reports', icon: <FiBarChart2 />, path: '/reports' },
+  { label: 'Pay History', icon: <FiDollarSign />, path: '/salaryhistory' },
+  { label: 'Payslip Generator', icon: <FiBarChart2 />, path: '/payslip' },
   { label: 'Holiday List', icon: <FiCalendar />, path: '/holidays' },
   { label: 'Settings', icon: <FiSettings />, path: '/settings' }
 ];
@@ -133,7 +134,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           <div className="mt-auto pb-4 px-4">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 w-full px-4 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-gray-100"
+              className="flex items-center gap-3 w-full  py-2 rounded-md text-sm font-medium text-red-600 hover:bg-gray-100"
             >
               <FiLogOut className="text-lg" />
               <span>Logout</span>

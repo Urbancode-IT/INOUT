@@ -26,7 +26,7 @@ const AbsentUsersList = ({ allUsers = [], logs = [] }) => {
           <li key={user._id} className="px-4 py-3 hover:bg-gray-50">
             <div className="flex justify-between items-center">
               <span className="font-medium text-gray-800">{user.name}</span>
-              <span className="text-sm text-gray-500">{user.email}</span>
+              <span className="text-sm text-gray-500">{user.position} | {user.company}</span>
             </div>
             {user.department && (
               <span className="inline-block mt-1 text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">

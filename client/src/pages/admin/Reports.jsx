@@ -2,6 +2,12 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_ENDPOINTS } from "../../utils/api";
 import { Home as WFHIcon } from '@mui/icons-material';
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import html2pdf from 'html2pdf.js';
+import { Button } from "@mui/material";  
+
+
 import {
   Box,
   Typography,
@@ -44,13 +50,16 @@ import {
   AlarmOn as EarlyIcon
 } from "@mui/icons-material";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+
+
 
 const theme = createTheme({
   typography: {
     fontFamily: 'Montserrat, sans-serif',
   },
 });
-
 
   
 
@@ -72,6 +81,7 @@ const getDayName = (date) => {
 const Report = () => {
   const [logs, setLogs] = useState([]);
   const [schedules, setSchedules] = useState([]);
+  const [holidays, setHolidays] = useState([]); // Add state for holidays
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
@@ -84,12 +94,18 @@ const Report = () => {
     const fetchData = async () => {
       try {
         const headers = { Authorization: `Bearer ${token}` };
-        const [logsRes, schedulesRes] = await Promise.all([
+        const year = selectedMonth.getFullYear();
+        const month = selectedMonth.getMonth() + 1; // Months are 1-indexed in API
+        
+        const [logsRes, schedulesRes, holidaysRes] = await Promise.all([
           axios.get(API_ENDPOINTS.getRecentAttendanceLogs, { headers }),
-          axios.get(API_ENDPOINTS.getSchedules, { headers })
+          axios.get(API_ENDPOINTS.getSchedules, { headers }),
+          axios.get(`${API_ENDPOINTS.getHolidaysByMonth}?year=${year}&month=${month}`, { headers })
         ]);
+        
         setLogs(logsRes.data);
         setSchedules(schedulesRes.data);
+        setHolidays(holidaysRes.data);
       } catch (err) {
         console.error("Failed to fetch data:", err);
       } finally {
@@ -97,15 +113,173 @@ const Report = () => {
       }
     };
     fetchData();
-  }, [token]);
+  }, [token, selectedMonth]); // Add selectedMonth as dependency
+
+  // Helper function to check if a date is a holiday
+  const isHoliday = (date) => {
+    return holidays.some(holiday => {
+      const holidayDate = new Date(holiday.date);
+      return holidayDate.toDateString() === date.toDateString();
+    });
+  };
+
+  // Helper function to get holiday name for a date
+  const getHolidayName = (date) => {
+    const holiday = holidays.find(holiday => {
+      const holidayDate = new Date(holiday.date);
+      return holidayDate.toDateString() === date.toDateString();
+    });
+    return holiday ? holiday.name : null;
+  };
+
 
   const [year, month] = [selectedMonth.getFullYear(), selectedMonth.getMonth()];
   const allDates = getDatesInMonth(year, month);
 
+ 
   const employees = [...new Set(logs.map((log) => log.employeeName || "Unknown"))]
     .filter(employee => 
       employee.toLowerCase().includes(searchTerm.toLowerCase())
     );
+ const monthYearLabel = selectedMonth.toLocaleDateString("en-US", {
+  month: "long",
+  year: "numeric",
+});
+
+const fitToColumn = (data) => {
+  const result = data[0].map((col, i) => {
+    const maxLength = data.reduce((acc, row) => {
+      const val = row[i] ? row[i].toString() : '';
+      return Math.max(acc, val.length);
+    }, col ? col.toString().length : 0);
+    return { wch: maxLength + 2 }; // Add extra padding
+  });
+  return result;
+};
+const downloadDetailedExcel = () => {
+   const wb = XLSX.utils.book_new();
+
+  const summaryData = [
+    ['Name', 'Position', 'Company', 'Total Days', 'Present', 'Absent', 'Late']
+  ];
+
+  // Build Summary Sheet Data
+  employees.forEach((employee) => {
+    const userSchedule = schedules.find(sch => sch.user?.name === employee);
+    const weeklySchedule = userSchedule?.weeklySchedule || {};
+    const stats = getEmployeeStats(employee, weeklySchedule);
+
+    summaryData.push([
+      employee,
+      userSchedule?.user?.position || 'Position',
+      userSchedule?.user?.company || 'Company',
+      stats.scheduledWorkingDays,
+      stats.presentCount,
+      stats.absentCount,
+      stats.lateCount
+    ]);
+  });
+
+  const summaryWS = XLSX.utils.aoa_to_sheet(summaryData);
+  summaryWS['!autofilter'] = { ref: "A1:G1" };
+  summaryWS['!cols'] = fitToColumn(summaryData);
+  XLSX.utils.book_append_sheet(wb, summaryWS, "Summary");
+
+  // Individual Employee Sheets
+  employees.forEach((employee) => {
+    const wsData = [
+      ['Date', 'Day', 'CheckIn', 'CheckOut', 'WorkHours', 'Status', 'Late', 'EarlyLeave']
+    ];
+
+    const userSchedule = schedules.find(sch => sch.user?.name === employee);
+    const weeklySchedule = userSchedule?.weeklySchedule || {};
+
+    allDates.forEach((dateObj) => {
+      const dateKey = dateObj.toDateString();
+      const dayName = getDayName(dateObj);
+      const attendance = grouped[employee]?.[dateKey];
+      const checkIn = attendance?.checkIn;
+      const checkOut = attendance?.checkOut;
+      const scheduled = weeklySchedule[dayName];
+
+      const checkInTime = checkIn
+        ? new Date(checkIn.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '';
+
+      const checkOutTime = checkOut
+        ? new Date(checkOut.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '';
+
+      let status = '—';
+      if (isHoliday(dateObj)) {
+  status = 'Leave';
+} else if (scheduled?.isLeave && checkIn) {
+  const officeName = checkIn.officeName?.toLowerCase() || '';
+  const presentType = (!officeName.includes("velechery") && !officeName.includes("pallikaranai")) ? 'WFH' : 'Present';
+  status = `${presentType} (Scheduled Leave)`;  // Mark both Present and Scheduled Leave
+} else if (scheduled?.isLeave) {
+  status = 'Leave';
+} else if (checkIn) {
+  const officeName = checkIn.officeName?.toLowerCase() || '';
+  status = (!officeName.includes("velechery") && !officeName.includes("pallikaranai")) ? 'WFH' : 'Present';
+} else if (dateObj.getDay() !== 0 && scheduled && !scheduled.isLeave) {
+  status = 'Absent';
+}
+
+      let workHours = '';
+      if (checkIn && checkOut) {
+        const diff = new Date(checkOut.timestamp) - new Date(checkIn.timestamp);
+        const h = Math.floor(diff / (1000 * 60 * 60));
+        const m = Math.floor((diff / (1000 * 60)) % 60);
+        workHours = `${h}h ${m}m`;
+      }
+
+      let isLate = '';
+      let isEarly = '';
+      if (checkIn && scheduled?.start) {
+        const [schInH, schInM] = scheduled.start.split(":").map(Number);
+        const schIn = new Date(dateObj);
+        schIn.setHours(schInH, schInM, 0, 0);
+        const actualIn = new Date(checkIn.timestamp);
+        const schInWithGrace = new Date(schIn.getTime() + 10 * 60000);
+        if (actualIn > schInWithGrace) isLate = 'Yes';
+      }
+
+      if (checkOut && scheduled?.end) {
+        const [schOutH, schOutM] = scheduled.end.split(":").map(Number);
+        const schOut = new Date(dateObj);
+        schOut.setHours(schOutH, schOutM, 0, 0);
+        const actualOut = new Date(checkOut.timestamp);
+        if (actualOut < schOut) isEarly = 'Yes';
+      }
+
+      wsData.push([
+        dateObj.toLocaleDateString(),
+        dayName,
+        
+        checkInTime,
+        checkOutTime,
+        workHours,
+        status,
+        isLate,
+        isEarly,
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws['!autofilter'] = { ref: "A1:H1" };
+    ws['!cols'] = fitToColumn(wsData);
+    XLSX.utils.book_append_sheet(wb, ws, employee.substring(0, 31));
+  });
+
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const dataBlob = new Blob([wbout], { type: 'application/octet-stream' });
+  saveAs(dataBlob, `Attendance_Report_${selectedMonth.getFullYear()}_${selectedMonth.getMonth() + 1}.xlsx`);
+};
+
+
+
+
 
   const filteredLogs = logs.filter((log) => {
     const date = new Date(log.timestamp);
@@ -130,7 +304,7 @@ const Report = () => {
     }
   });
 
-  const getEmployeeStats = (employee, weeklySchedule) => {
+   const getEmployeeStats = (employee, weeklySchedule) => {
     let presentCount = 0;
     let absentCount = 0;
     let leaveCount = 0;
@@ -138,7 +312,7 @@ const Report = () => {
     let lateCount = 0;
     let earlyCount = 0;
     let scheduledWorkingDays = 0;
-    const wfhDays=[];
+    const wfhDays = [];
 
     allDates.forEach((dateObj) => {
       const dateKey = dateObj.toDateString();
@@ -146,11 +320,12 @@ const Report = () => {
       const isFuture = dateObj > today;
       const dayName = getDayName(dateObj);
       const scheduled = weeklySchedule[dayName];
+      const isHolidayDate = isHoliday(dateObj);
 
       if (isFuture) return;
 
-      // Calculate scheduled working days (excluding leaves and weekends)
-      if (scheduled && !scheduled.isLeave && dateObj.getDay() !== 0) {
+      // Calculate scheduled working days (excluding holidays, leaves and weekends)
+      if (scheduled && !scheduled.isLeave && dateObj.getDay() !== 0 && !isHolidayDate) {
         scheduledWorkingDays++;
       }
 
@@ -158,27 +333,32 @@ const Report = () => {
       const checkIn = attendance?.checkIn;
       const checkOut = attendance?.checkOut;
 
-      if (scheduled?.isLeave) {
+      if (isHolidayDate) {
+        // Count holidays as leaves
+        leaveCount++;
+      } else if (scheduled?.isLeave) {
         leaveCount++;
       } else if (checkIn) {
         presentCount++;
-         // Check for WFH (office name not "velechery" or "pallikaranai")
-      const officeName = checkIn.officeName?.toLowerCase();
-      const isWFH = officeName && 
-                   !officeName.includes("velechery") && 
-                   !officeName.includes("pallikaranai");
-      
-      if (isWFH) {
-        wfhCount++;
-        wfhDays.push(dateKey); // Track this as WFH day
-      }
+        // Check for WFH (office name not "velechery" or "pallikaranai")
+        const officeName = checkIn.officeName?.toLowerCase();
+        const isWFH = officeName && 
+                     !officeName.includes("velechery") && 
+                     !officeName.includes("pallikaranai");
+        
+        if (isWFH) {
+          wfhCount++;
+          wfhDays.push(dateKey); // Track this as WFH day
+        }
         // Check for late arrival or early departure
         if (scheduled?.start) {
           const [schInH, schInM] = scheduled.start.split(":").map(Number);
           const schIn = new Date(dateObj);
           schIn.setHours(schInH, schInM, 0, 0);
           const actualIn = new Date(checkIn.timestamp);
-          if (actualIn > schIn) lateCount++;
+          const schInWithGrace = new Date(schIn.getTime() + 10 * 60000); // +10 minutes
+
+          if (actualIn > schInWithGrace) lateCount++;
         }
 
         if (checkOut && scheduled?.end) {
@@ -192,7 +372,7 @@ const Report = () => {
         if (checkIn.officeName?.toLowerCase().includes("home")) {
           wfhCount++;
         }
-      } else if (dateObj.getDay() !== 0) { // Not Sunday
+      } else if (dateObj.getDay() !== 0 && !isHolidayDate) { // Not Sunday and not holiday
         absentCount++;
       }
     });
@@ -208,6 +388,7 @@ const Report = () => {
       wfhDays
     };
   };
+
 
   if (loading) {
     return (
@@ -249,12 +430,25 @@ const Report = () => {
               }}
             />
           </Grid>
+          <Grid item xs={12} md={6}>
+              
+  <Button variant="contained" color="primary" onClick={downloadDetailedExcel}>
+  Download Detailed Excel
+</Button>
+          </Grid>
         </Grid>
-<Stack direction="row" alignItems="center" spacing={2} mb={4}>
-          
-          <h1 className="text-2xl font-bold text-blue-600"><CalendarIcon color="primary" sx={{ fontSize: 25 }} /> Monthly Attendance Report</h1>
-          
-        </Stack>
+
+<Box id="report-content" >
+  <Stack direction="row" alignItems="center" spacing={2} mb={4}>
+  <h1 className="text-2xl font-bold text-blue-600">
+    
+    {monthYearLabel} User wise Attendance Report
+  </h1>
+  
+</Stack>
+
+
+
         {employees.length === 0 ? (
           <Paper elevation={3} sx={{ p: 3, textAlign: "center" }}>
             <Typography variant="h6">
@@ -262,7 +456,7 @@ const Report = () => {
             </Typography>
           </Paper>
         ) : (
-          employees.map((employee) => {
+          employees.map((employee,index) => {
             const userSchedule = schedules.find(sch => sch.user?.name === employee);
             const weeklySchedule = userSchedule?.weeklySchedule || {};
             const { 
@@ -276,12 +470,18 @@ const Report = () => {
             } = getEmployeeStats(employee, weeklySchedule);
             
             const sampleLog = logs.find((log) => log.employeeName === employee);
+            
+const userInfo = userSchedule?.user;
+
+const position = userInfo?.position || "Position not specified";
+const company = userInfo?.company || "Company not specified";
             const attendancePercentage = scheduledWorkingDays > 0 
               ? Math.round((presentCount / scheduledWorkingDays) * 100)
               : 0;
             
             return (
-              <Card key={employee} elevation={3} sx={{ mb: 4 }}>
+              <div key={employee} id={`employee-section-${index}`} style={{ marginBottom: "20px" }}>
+              <Card key={employee} elevation={3} sx={{ mb: 4,border: '1px solid #ddd' }}>
                 <CardContent>
                   {/* Employee Summary Section */}
                   <Grid container spacing={3} mb={4}>
@@ -293,14 +493,14 @@ const Report = () => {
                         <Box>
                           <Typography variant="h5">{employee}</Typography>
                           <Typography variant="body2" color="text.secondary">
-                            {sampleLog?.position || "Position not specified"}
+                            {position}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            {sampleLog?.company || "Company not specified"}
+                            {company}
                           </Typography>
                         </Box>
                          <Grid item xs={6} sm={4} md={3} >
-                          <Paper elevation={1} sx={{  p: 2, mx: 6, textAlign: "center" }}>
+                          <Paper elevation={1} sx={{  p: 2, mx: 6,border: '1px solid #ddd', textAlign: "center" }}>
                             <Stack direction="row" alignItems="center" justifyContent="center" spacing={1}>
                               <WorkDaysIcon color="action" />
                               <Typography variant="h6">
@@ -336,7 +536,7 @@ const Report = () => {
                       <Grid container spacing={2}>
                        
                         <Grid item xs={6} sm={4} md={3}>
-                          <Paper elevation={1} sx={{ p: 2, textAlign: "center" }}>
+                          <Paper elevation={1} sx={{ p: 2, textAlign: "center", border: '1px solid #ddd'}}>
                             <Typography variant="h6" color="primary">
                               {presentCount}
                             </Typography>
@@ -344,7 +544,7 @@ const Report = () => {
                           </Paper>
                         </Grid>
                         <Grid item xs={6} sm={4} md={3}>
-                          <Paper elevation={1} sx={{ p: 2, textAlign: "center" }}>
+                          <Paper elevation={1} sx={{ p: 2,border: '1px solid #ddd', textAlign: "center" }}>
                             <Typography variant="h6" color="error">
                               {absentCount}
                             </Typography>
@@ -352,7 +552,7 @@ const Report = () => {
                           </Paper>
                         </Grid>
                         <Grid item xs={6} sm={4} md={3}>
-                          <Paper elevation={1} sx={{ p: 2, textAlign: "center" }}>
+                          <Paper elevation={1} sx={{ p: 2,border: '1px solid #ddd', textAlign: "center" }}>
                             <Typography variant="h6" color="info.main">
                               {leaveCount}
                             </Typography>
@@ -360,7 +560,7 @@ const Report = () => {
                           </Paper>
                         </Grid>
                         <Grid item xs={6} sm={4} md={3}>
-                          <Paper elevation={1} sx={{ p: 2, textAlign: "center" }}>
+                          <Paper elevation={1} sx={{ p: 2,border: '1px solid #ddd', textAlign: "center" }}>
                             <Typography variant="h6" color="success.main">
                               {wfhCount}
                             </Typography>
@@ -369,7 +569,7 @@ const Report = () => {
                         </Grid>
                         
                         <Grid item xs={6} sm={4} md={3}>
-                          <Paper elevation={1} sx={{ p: 2, textAlign: "center" }}>
+                          <Paper elevation={1} sx={{ p: 2,border: '1px solid #ddd', textAlign: "center" }}>
                             <Typography variant="h6" color={attendancePercentage >= 90 ? "success.main" : "warning.main"}>
                               {attendancePercentage}%
                             </Typography>
@@ -377,7 +577,7 @@ const Report = () => {
                           </Paper>
                         </Grid>
                         <Grid item xs={6} sm={4} md={3}>
-                          <Paper elevation={1} sx={{ p: 2, textAlign: "center" }}>
+                          <Paper elevation={1} sx={{ p: 2,border: '1px solid #ddd', textAlign: "center" }}>
                             <Typography variant="h6" color="warning.main">
                               {lateCount}
                             </Typography>
@@ -385,7 +585,7 @@ const Report = () => {
                           </Paper>
                         </Grid>
                         <Grid item xs={6} sm={4} md={3}>
-                          <Paper elevation={1} sx={{ p: 2, textAlign: "center" }}>
+                          <Paper elevation={1} sx={{ p: 2,border: '1px solid #ddd', textAlign: "center" }}>
                             <Typography variant="h6" color="warning.main">
                               {earlyCount}
                             </Typography>
@@ -419,6 +619,8 @@ const Report = () => {
                           const isFuture = dateObj > today;
                           const dayName = getDayName(dateObj);
                           const scheduled = weeklySchedule[dayName];
+                          const isHolidayDate = isHoliday(dateObj);
+                          const holidayName = getHolidayName(dateObj);
 
                           const attendance = grouped[employee]?.[dateKey];
                           const checkIn = attendance?.checkIn;
@@ -454,6 +656,10 @@ const Report = () => {
                           let isWFH = false;
                           if (isFuture) {
                             status = "";
+                          } 
+                           else if (isHolidayDate) {
+                            status = holidayName || "Holiday";
+                            statusColor = "info";
                           } else if (scheduled?.isLeave) {
                             status = "Leave";
                             statusColor = "info";
@@ -470,7 +676,8 @@ const Report = () => {
                               const schIn = new Date(dateObj);
                               schIn.setHours(schInH, schInM, 0, 0);
                               const actualIn = new Date(checkIn.timestamp);
-                              if (actualIn > schIn) late = true;
+                              const schInWithGrace = new Date(schIn.getTime() + 10 * 60000);
+                              if (actualIn > schInWithGrace) late = true;
                             }
 
                             if (checkOut && scheduled?.end) {
@@ -518,11 +725,13 @@ const Report = () => {
                               <TableCell align="center">{workHours}</TableCell>
                               <TableCell align="center">
                                 <Chip
-                                  label={status}
-                                  color={statusColor}
-                                  size="small"
-                                  icon={
-                                    status === "Remote" ? (
+  label={status}
+  color={statusColor}
+  size="small"
+  variant="outlined"
+  sx={{ width: '100px', justifyContent: 'left' }} // Ensure fixed width
+  icon={
+    status === "Remote" ? (
       <WFHIcon fontSize="small" />
     ) : status === "Present" ? (
       <PresentIcon fontSize="small" />
@@ -531,8 +740,8 @@ const Report = () => {
     ) : (
       <LeaveIcon fontSize="small" />
     )
-                                  }
-                                />
+  }
+/>
                               </TableCell>
                             </TableRow>
                           );
@@ -542,9 +751,11 @@ const Report = () => {
                   </Box>
                 </CardContent>
               </Card>
+               </div>
             );
           })
         )}
+      </Box>
       </Box>
     </LocalizationProvider>
     </ThemeProvider>

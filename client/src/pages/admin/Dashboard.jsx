@@ -90,9 +90,9 @@ const Dashboard = () => {
   if (loading) return <Loader />;
 
   return (
-    <div className="p-6 ">
+    <div className="sm:p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-      <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+      <h1 className="text-2xl font-bold text-blue-600">Today's Attendance Report</h1>
     <ReportGenerator
           logs={filteredLogs} 
   allUsers={allUsers} 
@@ -166,8 +166,10 @@ const Dashboard = () => {
       </div>
 
       {/* Attendance Table */}
+      <div className="overflow-x-auto">
       <RecentAttendanceTable logs={filteredLogs} />
-     <AbsentUsersList allUsers={allUsers} logs={logsForSelectedDate} />
+      
+     <AbsentUsersList allUsers={allUsers} logs={logsForSelectedDate} /></div>
     </div>
   );
 };

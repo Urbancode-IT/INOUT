@@ -53,7 +53,7 @@ const UserCard = ({ user, className = '', onEdit }) => {
   if (!isExpanded) {
     return (
       <div 
-        className={`relative w-full hover:bg-blue-50 hover:border-blue-200 rounded-xl border bg-white p-4 shadow-sm transition-all duration-300 cursor-pointer ${className}`}
+        className={`relative w-full hover:bg-blue-50 hover:border-blue-200 rounded-xl border bg-white p-3 shadow-sm transition-all duration-300 cursor-pointer ${className}`}
         onClick={() => setIsExpanded(true)}
       >
         <div className={`absolute top-3 right-3 w-3 h-3 rounded-full ${user.isActive ? 'bg-green-500' : 'bg-gray-300'} shadow-sm`} />
@@ -88,7 +88,7 @@ const UserCard = ({ user, className = '', onEdit }) => {
   }
 
   return (
-    <div className={`relative w-full  hover:border-blue-200 max-w-5xl mx-auto rounded-xl border bg-white p-8 shadow-lg group transition-all duration-300 hover:shadow-xl ${className}`}>
+    <div className={`relative w-full  hover:border-blue-200 max-w-5xl mx-auto rounded-xl border bg-white p-4 shadow-lg group transition-all duration-300 hover:shadow-xl ${className}`}>
       <button 
         onClick={() => setIsExpanded(false)}
         className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100"
@@ -98,14 +98,14 @@ const UserCard = ({ user, className = '', onEdit }) => {
       
      
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-4">
         {/* Left Column - Big Profile Picture and Basic Info */}
         <div className="w-full lg:w-1/3 flex flex-col items-center">
           <div className="relative mb-6">
             <img
               src={'https://www.pikpng.com/pngl/m/154-1540525_male-user-filled-icon-my-profile-icon-png.png'}
               alt={`${user.name}'s avatar`}
-              className="w-48 h-48 rounded-full object-cover ring-4 ring-gray-200 shadow-md"
+              className="w-36 h-36 rounded-full object-cover ring-4 ring-gray-200 shadow-md"
             />
             <img
               src={getCompanyLogo(user.company)}

@@ -64,8 +64,9 @@ const userController = {
     }
   },
 
-  updateUser: async (req, res) => {
+updateUser: async (req, res) => {
   try {
+    console.log("Entering update user");
     const {
       name,
       email,
@@ -80,7 +81,8 @@ const userController = {
       skills,
       rolesAndResponsibility,
       profilePic,
-      bankDetails
+      bankDetails,
+      isActive
     } = req.body;
 
     const updateData = {};
@@ -98,6 +100,9 @@ const userController = {
     if (bankDetails && typeof bankDetails === 'object') updateData.bankDetails = bankDetails;
     if (dateOfJoining) updateData.dateOfJoining = new Date(dateOfJoining);
     if (password) updateData.password = await bcrypt.hash(password, 10);
+    
+    // Add isActive field
+    if (isActive !== undefined) updateData.isActive = isActive;
 
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,

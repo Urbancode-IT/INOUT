@@ -9,19 +9,27 @@ const Attendance = require('../models/Attendance');
 const adminController = {
   getAdminSummary: async (req, res) => {
     try {
-      const totalEmployees = await User.countDocuments({ role: 'employee' });
+      // Count only active employees
+      const totalEmployees = await User.countDocuments({ role: 'employee', isActive: true });
 
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
       const todayEnd = new Date();
       todayEnd.setHours(23, 59, 59, 999);
 
-      const todayAttendance = await Attendance.find({
+      // Get distinct user ids who checked in today
+      const todayAttendanceUserIds = await Attendance.find({
         timestamp: { $gte: todayStart, $lte: todayEnd },
         type: 'check-in'
       }).distinct('user');
 
-      const presentToday = todayAttendance.length;
+      // Only count those users who are active employees
+      const presentToday = await User.countDocuments({
+        _id: { $in: todayAttendanceUserIds },
+        role: 'employee',
+        isActive: true
+      });
+
       const absentToday = totalEmployees - presentToday;
 
       res.json({ totalEmployees, presentToday, absentToday });
@@ -30,6 +38,42 @@ const adminController = {
       res.status(500).json({ error: 'Internal server error' });
     }
   },
+
+ getRecentAttendanceDashboard: async (req, res) => {
+  try {
+    const logs = await Attendance.find()
+      .sort({ timestamp: -1 })
+      .limit(1000)
+      .populate({
+        path: 'user',
+        match: { role: 'employee', isActive:true },
+        select: '_id name email role company position department'
+      });
+
+    // Remove logs where user did not match population filter
+    const filteredLogs = logs.filter(log => log.user !== null);
+
+    const formatted = filteredLogs.map(log => ({
+      employeeName: log.user.name,
+      userId: log.user._id,
+      role: log.user.role,
+      position: log.user.position,
+      department: log.user.department,
+      company: log.user.company,
+      type: log.type,
+      timestamp: log.timestamp, // ← KEEP UTC exactly as stored
+      officeName: log.officeName || 'Outside Office',
+      image: log.image || ''
+    }));
+
+    res.json(formatted);
+  } catch (error) {
+    console.error('Error fetching recent logs:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+},
+
+
 
   getRecentAttendance: async (req, res) => {
     try {

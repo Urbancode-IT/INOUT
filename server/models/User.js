@@ -36,6 +36,12 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  bloodGroup: {
+    type: String
+  },
+  address: {
+    type: String
+  },
   position: {
     type: String,
     required: true

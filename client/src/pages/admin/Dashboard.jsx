@@ -33,10 +33,10 @@ const Dashboard = () => {
 
     const [summaryRes, logsRes, usersRes] = await Promise.all([
       axios.get(API_ENDPOINTS.getAdminSummary, { headers }),
-      axios.get(API_ENDPOINTS.getRecentAttendanceLogs, { headers }),
+      axios.get(API_ENDPOINTS.getRecentDashboardLogs, { headers }),
       axios.get(API_ENDPOINTS.getAllUsers, { headers }), 
     ]);
-
+    console.log("logsRes",logsRes);
     setSummary(summaryRes.data || {});
     setLogs(logsRes.data || []);
     setFilteredLogs(logsRes.data || []);
@@ -82,12 +82,14 @@ const Dashboard = () => {
     }
 
     setFilteredLogs(result);
-  }, [logs, search, dateFilter, typeFilter, locationFilter, companyFilter]);
+    
+  }, [logs, search, dateFilter, typeFilter]);
   const logsForSelectedDate = logs.filter(log =>
   new Date(log.timestamp).toDateString() === new Date(dateFilter).toDateString()
 );
 
   if (loading) return <Loader />;
+  console.log("FL,L",filteredLogs,logs);
 
   return (
     <div className="sm:p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
@@ -140,29 +142,6 @@ const Dashboard = () => {
           <option value="check-in">Check In</option>
           <option value="check-out">Check Out</option>
         </select>
-
-        {/* Location Filter */}
-        {/* <select
-          value={locationFilter}
-          onChange={(e) => setLocationFilter(e.target.value)}
-          className="border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="all">All Locations</option>
-          <option value="office">In Office</option>
-          <option value="remote">Remote</option>
-        </select> */}
-
-        {/* Company Filter */}
-        {/* <select
-          value={companyFilter}
-          onChange={(e) => setCompanyFilter(e.target.value)}
-          className="border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="all">All Companies</option>
-          <option value="Urbancode">Urbancode</option>
-          <option value="Jobzenter">Jobzenter</option>
-        </select> */}
-        
       </div>
 
       {/* Attendance Table */}

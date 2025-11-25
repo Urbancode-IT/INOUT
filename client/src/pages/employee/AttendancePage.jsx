@@ -210,23 +210,45 @@ function AttendancePage() {
     navigate("/login");
   };
 
-  const attendanceMap = {};
-  attendanceHistory.forEach((entry) => {
-    const dateKey = new Date(entry.timestamp).toDateString();
+ const now = new Date();
+const thisMonth = now.getMonth();
+const thisYear = now.getFullYear();
+
+const attendanceMap = {};
+
+attendanceHistory.forEach((entry) => {
+  const entryDate = new Date(entry.timestamp);
+
+  // Count only this month's dates
+  if (
+    entryDate.getMonth() === thisMonth &&
+    entryDate.getFullYear() === thisYear
+  ) {
+    const dateKey = entryDate.toDateString();
+
     if (!attendanceMap[dateKey])
       attendanceMap[dateKey] = { checkin: false, checkout: false };
+
     if (entry.type === "check-in") attendanceMap[dateKey].checkin = true;
     if (entry.type === "check-out") attendanceMap[dateKey].checkout = true;
-  });
+  }
+});
 
-  const filteredLogs = attendanceHistory.filter(
-    (entry) =>
-      new Date(entry.timestamp).toDateString() === selectedDate.toDateString()
-  );
+// Today's filtered logs (unchanged)
+const filteredLogs = attendanceHistory.filter(
+  (entry) =>
+    new Date(entry.timestamp).toDateString() === selectedDate.toDateString()
+);
 
-  const presentDays = Object.keys(attendanceMap).length;
-  const totalDays = new Date().getDate();
-  const absentDays = totalDays - presentDays;
+// Count only days in this month
+const presentDays = Object.keys(attendanceMap).length;
+
+// Total days passed in this month (1st → today)
+const totalDays = now.getDate();
+
+// Absent = (days till today) - (present days)
+const absentDays = totalDays - presentDays;
+
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-lime-50 via-sky-50 to-pink-50 px-4 py-6 md:py-10 max-w-4xl mx-auto font-sans">
@@ -241,7 +263,7 @@ function AttendancePage() {
           ✅ Present: <span className="text-green-600">{presentDays}</span>
         </div>
         <div>
-          ❌ Absent: <span className="text-red-600">{absentDays}</span>
+          ❌ Leaves: <span className="text-red-600">{absentDays}</span>
         </div>
         <div>
           📅 Total: <span className="text-blue-600">{totalDays}</span>
@@ -256,6 +278,12 @@ function AttendancePage() {
           >
             📝 Apply Leave
           </button>
+          {/* <button
+            onClick={() => navigate("/profile")}
+            className="bg-yellow-500 text-white px-4 py-2 rounded shadow hover:bg-yellow-600 w-full sm:w-auto"
+          >
+            📝My Profile
+          </button> */}
           <button
             onClick={() => navigate("/task-manager")}
             className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 w-full sm:w-auto"

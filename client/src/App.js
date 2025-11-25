@@ -33,6 +33,7 @@ import PayslipGenerator from './pages/admin/PayslipGenerator';
 import PayslipList from './pages/admin/PayslipList';
 // Layout
 import Layout from './components/admin-dashboard/layout/Layout';
+import ProfileCard from './pages/employee/ProfileCard';
 
 function App() {
    const navigate = useNavigate();
@@ -69,6 +70,7 @@ function App() {
         <Route path="/attendance/:userId" element={<AttendancePage />} />
         <Route path="/apply-leave" element={<Leave />} />
         <Route path="/task-manager" element={<TaskManagerPage />} />
+        <Route path="/profile" element={<ProfileCard/>} />
         
 
         {/* Protected Admin Layout Wrapper */}

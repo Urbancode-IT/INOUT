@@ -13,7 +13,8 @@ import {
   CreditCard,
   User,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  X
 } from 'lucide-react';
 import urbancodeLogoSrc from '../../../assets/uclogo.png';
 import jobzenterLogoSrc from '../../../assets/jzlogo.png';
@@ -56,14 +57,15 @@ const UserCard = ({ user, className = '', onEdit }) => {
         className={`relative w-full hover:bg-blue-50 hover:border-blue-200 rounded-xl border bg-white p-3 shadow-sm transition-all duration-300 cursor-pointer ${className}`}
         onClick={() => setIsExpanded(true)}
       >
-        <div className={`absolute top-3 right-3 w-3 h-3 rounded-full ${user.isActive ? 'bg-green-500' : 'bg-gray-300'} shadow-sm`} />
+        <div className={`absolute top-3 right-3 w-5 h-3 rounded-full ${user.isActive ? 'bg-green-500' : 'bg-red-500'} shadow-sm`} ></div>
+
 
         <div className="flex items-center gap-4">
           <div className="relative">
             <img
               src={'https://www.pikpng.com/pngl/m/154-1540525_male-user-filled-icon-my-profile-icon-png.png'}
               alt={`${user.name}'s avatar`}
-              className="w-16 h-16 rounded-full object-cover ring-2 ring-gray-200"
+              className={`w-16 h-16 rounded-full object-cover ring-2 ring-gray-200 p-1 `}
             />
             <img
               src={getCompanyLogo(user.company)}
@@ -81,19 +83,19 @@ const UserCard = ({ user, className = '', onEdit }) => {
             </div>
           </div>
 
-          <ChevronDown className="w-5 h-5 text-gray-400" />
+          <ChevronDown className="w-5 h-5 text-gray-400 bg-gray-200 rounded-full" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`relative w-full  hover:border-blue-200 max-w-5xl mx-auto rounded-xl border bg-white p-4 shadow-lg group transition-all duration-300 hover:shadow-xl ${className}`}>
+    <div className={`relative w-full  hover:border-blue-200 mx-auto rounded-xl border bg-white p-4 shadow-lg group transition-all duration-300 hover:shadow-xl ${className}`}>
       <button 
         onClick={() => setIsExpanded(false)}
-        className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100"
+        className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100"
       >
-        <ChevronUp className="w-5 h-5 text-gray-500" />
+        <X className="w-7 h-7 text-gray-500 bg-gray-200 rounded-full" />
       </button>
       
      
@@ -105,12 +107,12 @@ const UserCard = ({ user, className = '', onEdit }) => {
             <img
               src={'https://www.pikpng.com/pngl/m/154-1540525_male-user-filled-icon-my-profile-icon-png.png'}
               alt={`${user.name}'s avatar`}
-              className="w-36 h-36 rounded-full object-cover ring-4 ring-gray-200 shadow-md"
+              className={`w-36 h-36 rounded-full object-cover ring-4  shadow-md p-1  ${user.isActive?'ring-green-300': 'ring-red-300'}`}
             />
             <img
               src={getCompanyLogo(user.company)}
               alt={`${user.company} logo`}
-              className="absolute -bottom-4 -right-4 w-14 h-14 rounded-full bg-white ring-4 p-1 object-contain ring-white"
+              className={`absolute -bottom-4 -right-4 w-14 h-14 ring-gray-200 rounded-full bg-white object-contain`}
             />
           </div>
 

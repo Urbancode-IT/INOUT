@@ -6,7 +6,7 @@ export const BASE_URL = 'https://uc-attendance-system-1ts2.onrender.com';
 // src/utils/api.js
 
 // Base URL
-//export const BASE_URL = 'http://localhost:5000'; // Change to your live domain when needed'https://uc-attendance-system-1ts2.onrender.com'
+// export const BASE_URL = 'http://localhost:5000'; // Change to your live domain when needed'https://uc-attendance-system-1ts2.onrender.com'
 
 // -----------------
 // Auth & User APIs
@@ -52,6 +52,7 @@ export const API_ENDPOINTS = {
   // -----------------
   getAdminSummary: `${BASE_URL}/api/admin/summary`,
   getRecentAttendanceLogs: `${BASE_URL}/api/admin/recent-attendance`,
+  getRecentDashboardLogs:`${BASE_URL}/api/admin/recent-dashboard`,
 
   // -----------------
   // Pending Users

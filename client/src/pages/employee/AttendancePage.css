@@ -2,6 +2,7 @@
   background-color: #bbf7d0 !important; /* Tailwind green-200 */
   color: #000 !important;               /* Dark font color */
   border-radius: 6px;
+  border : 1px solid #4F46E5;
 }
 
 .partial-present {

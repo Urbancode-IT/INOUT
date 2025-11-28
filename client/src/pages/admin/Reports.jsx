@@ -82,6 +82,8 @@ const Report = () => {
   const [logs, setLogs] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [holidays, setHolidays] = useState([]); // Add state for holidays
+  const [openIndex, setOpenIndex] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
@@ -440,7 +442,7 @@ const downloadDetailedExcel = () => {
 
 <Box id="report-content" >
   <Stack direction="row" alignItems="center" spacing={2} mb={4}>
-  <h1 className="text-2xl font-bold text-blue-600">
+  <h1 className="text-2xl font-bold text-gray-600">
     
     {monthYearLabel} User wise Attendance Report
   </h1>
@@ -595,10 +597,18 @@ const company = userInfo?.company || "Company not specified";
                       </Grid>
                     </Grid>
                   </Grid>
+                  <Button
+  variant="outlined"
+  onClick={() => setOpenIndex(openIndex === index ? null : index)}
+  sx={{ mb: 2 }}
+>
+  {openIndex === index ? "Hide Detailed Log" : "View Detailed Log"}
+</Button>
 
                   <Divider sx={{ my: 2 }} />
 
                   {/* Calendar View */}
+                  {openIndex === index && (
                   <Box sx={{ overflowX: "auto" }}>
                     <Table size="small">
                       <TableHead>
@@ -749,6 +759,7 @@ const company = userInfo?.company || "Company not specified";
                       </TableBody>
                     </Table>
                   </Box>
+                  )}
                 </CardContent>
               </Card>
                </div>

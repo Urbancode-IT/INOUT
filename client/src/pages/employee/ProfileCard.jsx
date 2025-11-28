@@ -1,77 +1,92 @@
 import './ProfileCard.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { API_ENDPOINTS } from '../../utils/api';
 
 export default function ProfileCard() {
   const [profile, setProfile] = useState({
-    basicInfo: {
-      name: "Sruthi joseph",
-      id: "1210372726433743682",
-      gender: "Female",
-      email: "sruthijoseph5@gmail.com",
-      phone: "081323323311",
-      avatar: "/Myphoto.jpg"
-    },
-    education: {
-      degree: "Master Degree - Public administration",
-      years: "2016-2018"
-    },
-    skills: ["HTML & CSS", "JavaScript (ES6+)", "React.js", "Node.js", "Python", "SQL & MongoDB", "Git & GitHub", "Docker"],
-    personalDetails: {
-      birthPlace: "chennai",
-      birthDate: "30 Oct 1994",
-      bloodType: "AB",
-      maritalStatus: "Single",
-      religion: "Christian"
-    },
-    banking: {
-      name: "sruthi joseph",
-      bankingName: "SBI",
-      upiId: "12233",
-      ifscCode:"SBI0987",
-      accountNumber: "081324815250"
-    },
-    company: {
-      position: "Senior Developer",
-      company: "TechCorp Solutions",
-      department: "Software Development",
-      salary: "85,000/year",
-      startDate: "March 2022",
-      employmentType: "Full-time"
+    name: "",
+    email: "",
+    phone: "",
+    bloodGroup: "",
+    address: "",
+    position: "",
+    company: "",
+    salary: 0,
+    role: "employee",
+    profilePic: "",
+    department: "",
+    qualification: "",
+    dateOfJoining: "",
+    rolesAndResponsibility: [],
+    skills: [],
+    bankDetails: {
+      bankingName: "",
+      bankAccountNumber: "",
+      ifscCode: "",
+      upiId: ""
     }
   });
 
   const [editing, setEditing] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleInputChange = (section, field, value) => {
+  // Fetch user profile data from backend
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await axios.get(API_ENDPOINTS.getProfile,{
+          headers: { Authorization: `Bearer ${token}` }
+        }); // Adjust endpoint as needed
+        setProfile(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  const handleInputChange = (field, value) => {
     setProfile(prev => ({
       ...prev,
-      [section]: {
-        ...prev[section],
+      [field]: value
+    }));
+  };
+
+  const handleNestedInputChange = (parentField, field, value) => {
+    setProfile(prev => ({
+      ...prev,
+      [parentField]: {
+        ...prev[parentField],
         [field]: value
       }
     }));
   };
 
-  const handleSkillChange = (index, value) => {
-    const newSkills = [...profile.skills];
-    newSkills[index] = value;
+  const handleArrayChange = (field, index, value) => {
+    const newArray = [...profile[field]];
+    newArray[index] = value;
     setProfile(prev => ({
       ...prev,
-      skills: newSkills
+      [field]: newArray
     }));
   };
 
-  const addSkill = () => {
+  const addArrayItem = (field) => {
     setProfile(prev => ({
       ...prev,
-      skills: [...prev.skills, "New Skill"]
+      [field]: [...prev[field], "New Item"]
     }));
   };
 
-  const removeSkill = (index) => {
+  const removeArrayItem = (field, index) => {
     setProfile(prev => ({
       ...prev,
-      skills: prev.skills.filter((_, i) => i !== index)
+      [field]: prev[field].filter((_, i) => i !== index)
     }));
   };
 
@@ -79,9 +94,20 @@ export default function ProfileCard() {
     setEditing(editing === section ? null : section);
   };
 
-  const saveChanges = () => {
-    setEditing(null);
+  const saveChanges = async () => {
+    try {
+      await axios.put('/api/user/profile', profile); // Adjust endpoint as needed
+      setEditing(null);
+      // Optional: Show success message
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      // Optional: Show error message
+    }
   };
+
+  if (loading) {
+    return <div className="loading">Loading profile...</div>;
+  }
 
   return (
     <div className="profile-container">
@@ -91,7 +117,7 @@ export default function ProfileCard() {
           {/* Basic Information Card */}
           <div className="card">
             <div className="card-header">
-              <h3>Basic information</h3>
+              <h3>Basic Information</h3>
               <button 
                 className="edit-btn" 
                 onClick={() => toggleEdit('basicInfo')}
@@ -102,58 +128,71 @@ export default function ProfileCard() {
             <div className="basic-info">
               <div className="left">
                 <img
-                  src={profile.basicInfo.avatar}
+                  src={profile.profilePic || "/default-avatar.jpg"}
                   alt="Profile"
                   className="avatar"
                 />
                 {editing === 'basicInfo' ? (
                   <input
                     type="text"
-                    value={profile.basicInfo.name}
-                    onChange={(e) => handleInputChange('basicInfo', 'name', e.target.value)}
+                    value={profile.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
                     className="edit-input"
                   />
                 ) : (
-                  <h2>{profile.basicInfo.name}</h2>
+                  <h2>{profile.name}</h2>
                 )}
-                <p>ID: {profile.basicInfo.id}</p>
+                
                 <div className="info-item">
-                  {editing === 'basicInfo' ? (
-                    <select
-                      value={profile.basicInfo.gender}
-                      onChange={(e) => handleInputChange('basicInfo', 'gender', e.target.value)}
-                      className="edit-select"
-                    >
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  ) : (
-                    <span>{profile.basicInfo.gender}</span>
-                  )}
-                </div>
-                <div className="info-item">
+                   Email: 
                   {editing === 'basicInfo' ? (
                     <input
                       type="email"
-                      value={profile.basicInfo.email}
-                      onChange={(e) => handleInputChange('basicInfo', 'email', e.target.value)}
+                      value={profile.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
                       className="edit-input"
                     />
                   ) : (
-                    <span>{profile.basicInfo.email}</span>
+                    <span>{profile.email}</span>
                   )}
                 </div>
                 <div className="info-item">
+                   Phone: 
                   {editing === 'basicInfo' ? (
                     <input
                       type="tel"
-                      value={profile.basicInfo.phone}
-                      onChange={(e) => handleInputChange('basicInfo', 'phone', e.target.value)}
+                      value={profile.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
                       className="edit-input"
                     />
                   ) : (
-                    <span>{profile.basicInfo.phone}</span>
+                    <span>{profile.phone}</span>
+                  )}
+                </div>
+                <div className="info-item">
+                   Address: 
+                  {editing === 'basicInfo' ? (
+                    <input
+                      type="text"
+                      value={profile.address}
+                      onChange={(e) => handleInputChange('address', e.target.value)}
+                      className="edit-input"
+                    />
+                  ) : (
+                    <span>{profile.address}</span>
+                  )}
+                </div>
+                <div className="info-item">
+                   Blood Group: 
+                  {editing === 'basicInfo' ? (
+                    <input
+                      type="text"
+                      value={profile.bloodGroup}
+                      onChange={(e) => handleInputChange('bloodGroup', e.target.value)}
+                      className="edit-input"
+                    />
+                  ) : (
+                    <span>{profile.bloodGroup}</span>
                   )}
                 </div>
               </div>
@@ -168,7 +207,7 @@ export default function ProfileCard() {
           {/* Education Card */}
           <div className="card">
             <div className="card-header">
-              <h3>Education</h3>
+              <h3>Education & Qualification</h3>
               <button 
                 className="edit-btn" 
                 onClick={() => toggleEdit('education')}
@@ -178,43 +217,16 @@ export default function ProfileCard() {
             </div>
             <div className="education-info">
               <div className="info-row">
-                <strong>Degree:</strong>
+                 Qualification: 
                 {editing === 'education' ? (
                   <input
                     type="text"
-                    value={profile.education.degree}
-                    onChange={(e) => handleInputChange('education', 'degree', e.target.value)}
+                    value={profile.qualification}
+                    onChange={(e) => handleInputChange('qualification', e.target.value)}
                     className="edit-input"
                   />
                 ) : (
-                  <span>{profile.education.degree}</span>
-                )}
-              </div>
-              {/* <div className="info-row">
-                <strong>Field:</strong>
-                {editing === 'education' ? (
-                  <input
-                    type="text"
-                    value={profile.education.field}
-                    onChange={(e) => handleInputChange('education', 'field', e.target.value)}
-                    className="edit-input"
-                  />
-                ) : (
-                  <span>{profile.education.field}</span>
-                )}
-              </div> */}
-              
-              <div className="info-row">
-                <strong>Years:</strong>
-                {editing === 'education' ? (
-                  <input
-                    type="text"
-                    value={profile.education.years}
-                    onChange={(e) => handleInputChange('education', 'years', e.target.value)}
-                    className="edit-input"
-                  />
-                ) : (
-                  <span>{profile.education.years}</span>
+                  <span>{profile.qualification}</span>
                 )}
               </div>
             </div>
@@ -225,10 +237,10 @@ export default function ProfileCard() {
             )}
           </div>
 
-          {/* Tech Skills Card */}
+          {/* Skills Card */}
           <div className="card">
             <div className="card-header">
-              <h3>Tech Skills</h3>
+              <h3>Skills</h3>
               <button 
                 className="edit-btn" 
                 onClick={() => toggleEdit('skills')}
@@ -244,12 +256,12 @@ export default function ProfileCard() {
                       <input
                         type="text"
                         value={skill}
-                        onChange={(e) => handleSkillChange(index, e.target.value)}
+                        onChange={(e) => handleArrayChange('skills', index, e.target.value)}
                         className="edit-input skill-input"
                       />
                       <button 
                         className="remove-skill-btn"
-                        onClick={() => removeSkill(index)}
+                        onClick={() => removeArrayItem('skills', index)}
                       >
                         ×
                       </button>
@@ -260,7 +272,7 @@ export default function ProfileCard() {
                 </div>
               ))}
               {editing === 'skills' && (
-                <button className="add-skill-btn" onClick={addSkill}>
+                <button className="add-skill-btn" onClick={() => addArrayItem('skills')}>
                   + Add Skill
                 </button>
               )}
@@ -271,12 +283,59 @@ export default function ProfileCard() {
               </button>
             )}
           </div>
+
+          {/* Roles & Responsibilities Card */}
+          <div className="card">
+            <div className="card-header">
+              <h3>Roles & Responsibilities</h3>
+              <button 
+                className="edit-btn" 
+                onClick={() => toggleEdit('rolesAndResponsibility')}
+              >
+                {editing === 'rolesAndResponsibility' ? 'Cancel' : 'Edit'}
+              </button>
+            </div>
+            <div className="roles-info">
+              {profile.rolesAndResponsibility.map((role, index) => (
+                <div key={index} className="role-item-container">
+                  {editing === 'rolesAndResponsibility' ? (
+                    <>
+                      <input
+                        type="text"
+                        value={role}
+                        onChange={(e) => handleArrayChange('rolesAndResponsibility', index, e.target.value)}
+                        className="edit-input role-input"
+                      />
+                      <button 
+                        className="remove-role-btn"
+                        onClick={() => removeArrayItem('rolesAndResponsibility', index)}
+                      >
+                        ×
+                      </button>
+                    </>
+                  ) : (
+                    <div className="role-item">• {role}</div>
+                  )}
+                </div>
+              ))}
+              {editing === 'rolesAndResponsibility' && (
+                <button className="add-role-btn" onClick={() => addArrayItem('rolesAndResponsibility')}>
+                  + Add Responsibility
+                </button>
+              )}
+            </div>
+            {editing === 'rolesAndResponsibility' && (
+              <button className="save-btn" onClick={saveChanges}>
+                Save Changes
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Right Column */}
         <div className="column">
-          {/* Place of Birth Card */}
-          <div className="card">
+          {/* Personal Details Card */}
+          {/* <div className="card">
             <div className="card-header">
               <h3>Personal Details</h3>
               <button 
@@ -288,76 +347,41 @@ export default function ProfileCard() {
             </div>
             <div className="personal-details">
               <div className="info-row">
-                <strong>Birth Place:</strong>
-                {editing === 'personalDetails' ? (
-                  <input
-                    type="text"
-                    value={profile.personalDetails.birthPlace}
-                    onChange={(e) => handleInputChange('personalDetails', 'birthPlace', e.target.value)}
-                    className="edit-input"
-                  />
-                ) : (
-                  <span>{profile.personalDetails.birthPlace}</span>
-                )}
-              </div>
-              <div className="info-row">
-                <strong>Birth Date:</strong>
-                {editing === 'personalDetails' ? (
-                  <input
-                    type="text"
-                    value={profile.personalDetails.birthDate}
-                    onChange={(e) => handleInputChange('personalDetails', 'birthDate', e.target.value)}
-                    className="edit-input"
-                  />
-                ) : (
-                  <span>{profile.personalDetails.birthDate}</span>
-                )}
-              </div>
-              <div className="info-row">
-                <strong>Blood Type:</strong>
+                 Blood Group: 
                 {editing === 'personalDetails' ? (
                   <select
-                    value={profile.personalDetails.bloodType}
-                    onChange={(e) => handleInputChange('personalDetails', 'bloodType', e.target.value)}
+                    value={profile.bloodGroup}
+                    onChange={(e) => handleInputChange('bloodGroup', e.target.value)}
                     className="edit-select"
                   >
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="AB">AB</option>
-                    <option value="O">O</option>
+                    <option value="">Select Blood Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
                   </select>
                 ) : (
-                  <span>{profile.personalDetails.bloodType}</span>
+                  <span>{profile.bloodGroup}</span>
                 )}
               </div>
               <div className="info-row">
-                <strong>Marital Status:</strong>
+                 Role: 
                 {editing === 'personalDetails' ? (
                   <select
-                    value={profile.personalDetails.maritalStatus}
-                    onChange={(e) => handleInputChange('personalDetails', 'maritalStatus', e.target.value)}
+                    value={profile.role}
+                    onChange={(e) => handleInputChange('role', e.target.value)}
                     className="edit-select"
                   >
-                    <option value="Single">Single</option>
-                    <option value="Married">Married</option>
-                    {/* <option value="Divorced">Divorced</option>
-                    <option value="Widowed">Widowed</option> */}
+                    <option value="employee">Employee</option>
+                    <option value="admin">Admin</option>
+                    <option value="other">Other</option>
                   </select>
                 ) : (
-                  <span>{profile.personalDetails.maritalStatus}</span>
-                )}
-              </div>
-              <div className="info-row">
-                <strong>Religion:</strong>
-                {editing === 'personalDetails' ? (
-                  <input
-                    type="text"
-                    value={profile.personalDetails.religion}
-                    onChange={(e) => handleInputChange('personalDetails', 'religion', e.target.value)}
-                    className="edit-input"
-                  />
-                ) : (
-                  <span>{profile.personalDetails.religion}</span>
+                  <span>{profile.role}</span>
                 )}
               </div>
             </div>
@@ -366,81 +390,81 @@ export default function ProfileCard() {
                 Save Changes
               </button>
             )}
-          </div>
+          </div> */}
 
           {/* Banking Details Card */}
           <div className="card">
             <div className="card-header">
-              <h3>Banking details</h3>
+              <h3>Banking Details</h3>
               <button 
                 className="edit-btn" 
-                onClick={() => toggleEdit('banking')}
+                onClick={() => toggleEdit('bankDetails')}
               >
-                {editing === 'banking' ? 'Cancel' : 'Edit'}
+                {editing === 'bankDetails' ? 'Cancel' : 'Edit'}
               </button>
             </div>
             <div className="banking-info">
               <div className="info-row">
-                <strong> Banking Name:</strong>
-                {editing === 'banking' ? (
+                 Bank Name: 
+                {editing === 'bankDetails' ? (
                   <input
                     type="text"
-                    value={profile.banking.name}
-                    onChange={(e) => handleInputChange('banking', 'name', e.target.value)}
+                    value={profile.bankDetails.bankingName}
+                    onChange={(e) => handleNestedInputChange('bankDetails', 'bankingName', e.target.value)}
                     className="edit-input"
                   />
                 ) : (
-                  <span>{profile.banking.name}</span>
+                  <span>{profile.bankDetails.bankingName}</span>
                 )}
               </div>
               <div className="info-row">
-                <strong>UPI ID:</strong>
-                {editing === 'banking' ? (
+                 Account Number: 
+                {editing === 'bankDetails' ? (
                   <input
                     type="text"
-                    value={profile.banking.upiId}
-                    onChange={(e) => handleInputChange('banking', 'upiId', e.target.value)}
+                    value={profile.bankDetails.bankAccountNumber}
+                    onChange={(e) => handleNestedInputChange('bankDetails', 'bankAccountNumber', e.target.value)}
                     className="edit-input"
                   />
                 ) : (
-                  <span>{profile.banking.upiId}</span>
+                  <span>{profile.bankDetails.bankAccountNumber}</span>
                 )}
               </div>
               <div className="info-row">
-                <strong>IFSC Code:</strong>
-                {editing === 'banking' ? (
+                 IFSC Code: 
+                {editing === 'bankDetails' ? (
                   <input
                     type="text"
-                    value={profile.banking.ifscCode}
-                    onChange={(e) => handleInputChange('banking', 'ifscCode', e.target.value)}
+                    value={profile.bankDetails.ifscCode}
+                    onChange={(e) => handleNestedInputChange('bankDetails', 'ifscCode', e.target.value)}
                     className="edit-input"
                   />
                 ) : (
-                  <span>{profile.banking.ifscCode}</span>
+                  <span>{profile.bankDetails.ifscCode}</span>
                 )}
               </div>
               <div className="info-row">
-                <strong>Account Number:</strong>
-                {editing === 'banking' ? (
+                 UPI ID: 
+                {editing === 'bankDetails' ? (
                   <input
                     type="text"
-                    value={profile.banking.accountNumber}
-                    onChange={(e) => handleInputChange('banking', 'accountNumber', e.target.value)}
+                    value={profile.bankDetails.upiId}
+                    onChange={(e) => handleNestedInputChange('bankDetails', 'upiId', e.target.value)}
                     className="edit-input"
                   />
                 ) : (
-                  <span>{profile.banking.accountNumber}</span>
+                  <span>{profile.bankDetails.upiId}</span>
                 )}
               </div>
             </div>
-            {editing === 'banking' && (
+            {editing === 'bankDetails' && (
               <button className="save-btn" onClick={saveChanges}>
                 Save Changes
               </button>
             )}
           </div>
 
-          {/* Company/Position Card */}
+          {/* Company & Position Card */}
           <div className="card">
             <div className="card-header">
               <h3>Company & Position</h3>
@@ -453,85 +477,68 @@ export default function ProfileCard() {
             </div>
             <div className="company-info">
               <div className="info-row">
-                <strong>Position:</strong>
+                 Position: 
                 {editing === 'company' ? (
                   <input
                     type="text"
-                    value={profile.company.position}
-                    onChange={(e) => handleInputChange('company', 'position', e.target.value)}
+                    value={profile.position}
+                    onChange={(e) => handleInputChange('position', e.target.value)}
                     className="edit-input"
                   />
                 ) : (
-                  <span>{profile.company.position}</span>
+                  <span>{profile.position}</span>
                 )}
               </div>
               <div className="info-row">
-                <strong>Company:</strong>
+                 Company: 
                 {editing === 'company' ? (
                   <input
                     type="text"
-                    value={profile.company.company}
-                    onChange={(e) => handleInputChange('company', 'company', e.target.value)}
+                    value={profile.company}
+                    onChange={(e) => handleInputChange('company', e.target.value)}
                     className="edit-input"
                   />
                 ) : (
-                  <span>{profile.company.company}</span>
+                  <span>{profile.company}</span>
                 )}
               </div>
               <div className="info-row">
-                <strong>Department:</strong>
+                 Department: 
                 {editing === 'company' ? (
                   <input
                     type="text"
-                    value={profile.company.department}
-                    onChange={(e) => handleInputChange('company', 'department', e.target.value)}
+                    value={profile.department}
+                    onChange={(e) => handleInputChange('department', e.target.value)}
                     className="edit-input"
                   />
                 ) : (
-                  <span>{profile.company.department}</span>
+                  <span>{profile.department}</span>
                 )}
               </div>
               <div className="info-row">
-                <strong>Salary:</strong>
+                 Salary: 
                 {editing === 'company' ? (
                   <input
-                    type="text"
-                    value={profile.company.salary}
-                    onChange={(e) => handleInputChange('company', 'salary', e.target.value)}
+                    type="number"
+                    value={profile.salary}
+                    onChange={(e) => handleInputChange('salary', e.target.value)}
                     className="edit-input"
                   />
                 ) : (
-                  <span>{profile.company.salary}</span>
+                  <span>${profile.salary.toLocaleString()}/year</span>
                 )}
               </div>
               <div className="info-row">
-                <strong>Start Date:</strong>
+                 Date of Joining: 
                 {editing === 'company' ? (
                   <input
-                    type="text"
-                    value={profile.company.startDate}
-                    onChange={(e) => handleInputChange('company', 'startDate', e.target.value)}
+                    type="date"
+                    value={profile.dateOfJoining ? new Date(profile.dateOfJoining).toISOString().split('T')[0] : ''}
+                    onChange={(e) => handleInputChange('dateOfJoining', e.target.value)}
                     className="edit-input"
                   />
                 ) : (
-                  <span>{profile.company.startDate}</span>
-                )}
-              </div>
-              <div className="info-row">
-                <strong>Employment Type:</strong>
-                {editing === 'company' ? (
-                  <select
-                    value={profile.company.employmentType}
-                    onChange={(e) => handleInputChange('company', 'employmentType', e.target.value)}
-                    className="edit-select"
-                  >
-                    <option value="Full-time">Full-time</option>
-                    <option value="Part-time">Part-time</option>
-                    <option value="Contract">Contract</option>
-                    <option value="Freelance">Freelance</option>
-                  </select>
-                ) : (
-                  <span>{profile.company.employmentType}</span>
+                  <span>{profile.dateOfJoining ? new Date(profile.dateOfJoining).toLocaleDateString() : 'Not set'}</span>
                 )}
               </div>
             </div>

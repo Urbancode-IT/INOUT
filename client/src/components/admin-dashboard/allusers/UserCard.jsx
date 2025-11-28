@@ -14,7 +14,8 @@ import {
   User,
   ChevronDown,
   ChevronUp,
-  X
+  X,
+  Droplet
 } from 'lucide-react';
 import urbancodeLogoSrc from '../../../assets/uclogo.png';
 import jobzenterLogoSrc from '../../../assets/jzlogo.png';
@@ -201,6 +202,18 @@ const UserCard = ({ user, className = '', onEdit }) => {
                   <Phone className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
                   <span className="font-mono">
                     {user.phone}
+                  </span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Droplet className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                  <span className="font-mono">
+                    {user.bloodGroup||'N/A'}
+                  </span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                  <span className="font-mono">
+                    {user.address|| 'N/A'}
                   </span>
                 </div>
               </div>

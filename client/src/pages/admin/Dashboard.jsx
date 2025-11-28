@@ -51,7 +51,7 @@ const Dashboard = () => {
   }, [token]);
   
   // Apply filters
-  useEffect(() => {
+  useEffect(() => { 
     let result = [...logs];
 
     if (search.trim()) {
@@ -94,7 +94,7 @@ const Dashboard = () => {
   return (
     <div className="sm:p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-      <h1 className="text-2xl font-bold text-blue-600">Today's Attendance Report</h1>
+      <h1 className="text-2xl font-bold text-gray-600">Today's Attendance Report</h1>
     <ReportGenerator
           logs={filteredLogs} 
   allUsers={allUsers} 

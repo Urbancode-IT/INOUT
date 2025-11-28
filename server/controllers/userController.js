@@ -52,6 +52,31 @@ const userController = {
       res.status(500).json({ error: 'Internal server error' });
     }
   },
+  getProfile: async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+},
+updateProfile:async (req, res) => {
+  try {
+    const updated = await User.findByIdAndUpdate(
+      req.userId,
+      req.body,
+      { new: true }
+    );
+
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+},
 
   getLoggedInUser: async (req, res) => {
     try {

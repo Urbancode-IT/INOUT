@@ -6,6 +6,14 @@ const PendingUser = require('../models/PendingUser');
 const Schedule = require('../models/Schedule');
 const Attendance = require('../models/Attendance');
 
+let cachedAttendance = null;
+let cacheTimestamp = null;
+const CACHE_TTL = 15 * 1000; 
+let cachedRecentAttendance = null;
+let cacheRecentAttendanceTime = null;
+const ATTENDANCE_CACHE_TTL = 60 * 1000; // 15 seconds
+
+
 const adminController = {
   getAdminSummary: async (req, res) => {
     try {
@@ -39,78 +47,147 @@ const adminController = {
     }
   },
 
- getRecentAttendanceDashboard: async (req, res) => {
+getRecentAttendanceDashboard: async (req, res) => {
   try {
-    const logs = await Attendance.find()
-      .sort({ timestamp: -1 })
-      .limit(1000)
-      .populate({
-        path: 'user',
-        match: { role: 'employee', isActive:true },
-        select: '_id name email role company position department'
-      });
+    const now = Date.now();
 
-    // Remove logs where user did not match population filter
-    const filteredLogs = logs.filter(log => log.user !== null);
+    // 1️⃣ Check if cache exists AND is not expired
+    if (cachedAttendance && cacheTimestamp && now - cacheTimestamp < CACHE_TTL) {
+      console.log("📦 Returning cached attendance");
+      return res.json(cachedAttendance);
+    }
 
-    const formatted = filteredLogs.map(log => ({
-      employeeName: log.user.name,
-      userId: log.user._id,
-      role: log.user.role,
-      position: log.user.position,
-      department: log.user.department,
-      company: log.user.company,
-      type: log.type,
-      timestamp: log.timestamp, // ← KEEP UTC exactly as stored
-      officeName: log.officeName || 'Outside Office',
-      image: log.image || ''
-    }));
+    console.log("🆕 Cache expired → Fetching from DB");
 
-    res.json(formatted);
-  } catch (error) {
-    console.error('Error fetching recent logs:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    // 2️⃣ Calculate last 30 days
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 30);
+
+    // 3️⃣ Run your aggregation
+    const logs = await Attendance.aggregate([
+      {
+        $match: { timestamp: { $gte: start, $lt: end } }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userData"
+        }
+      },
+      { $unwind: "$userData" },
+      {
+        $match: {
+          "userData.role": "employee",
+          "userData.isActive": true
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          employeeName: "$userData.name",
+          userId: "$userData._id",
+          role: "$userData.role",
+          position: "$userData.position",
+          department: "$userData.department",
+          company: "$userData.company",
+          type: 1,
+          timestamp: 1,
+          officeName: { $ifNull: ["$officeName", "Outside Office"] },
+          image: { $ifNull: ["$image", ""] }
+        }
+      },
+      { $sort: { timestamp: -1 } },
+      { $limit: 1500 }
+    ]);
+
+    // 4️⃣ Save to cache
+    cachedAttendance = logs;
+    cacheTimestamp = now;
+
+    return res.json(logs);
+
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 },
 
 
 
-  getRecentAttendance: async (req, res) => {
-    try {
-      const logs = await Attendance.find()
-        .sort({ timestamp: -1 })
-        .populate({
-          path: 'user',
-          match: { role: 'employee' },
-          select: '_id name email role company position department bankDetails dateOfJoining'
-        });
 
-      const filteredLogs = logs.filter(log => log.user !== null);
 
-      const formatted = filteredLogs.map(log => ({
-      employeeName: log.user.name,
-      userId: log.user._id,
-      role: log.user.role,
-      position: log.user.position,
-      department: log.user.department,
-      company: log.user.company,
-      dateOfJoining: log.user.dateOfJoining,
-      bankDetails: {
-        bankingName: log.user.bankDetails?.bankingName || '',
-        accountNumber: log.user.bankDetails?.bankAccountNumber || ''
-      },
-      type: log.type,
-      timestamp: log.timestamp,
-      officeName: log.officeName || 'Outside Office',
-      image: log.image || ''
-    }));
 
-      res.json(formatted);
-    } catch (error) {
-      console.error('Error fetching recent logs:', error);
-      res.status(500).json({ error: 'Internal server error' });
+getRecentAttendance: async (req, res) => {
+  try {
+    const now = Date.now();
+
+    // 1️⃣ If cache available and not expired → return cached response
+    if (
+      cachedRecentAttendance &&
+      cacheRecentAttendanceTime &&
+      now - cacheRecentAttendanceTime < ATTENDANCE_CACHE_TTL
+    ) {
+      console.log("📦 Returning cached RECENT ATTENDANCE");
+      return res.json(cachedRecentAttendance);
     }
-  },
+
+    console.log("🆕 Cache expired → Fetching RECENT ATTENDANCE from DB");
+
+    // 2️⃣ Fetch from database (optimized version)
+    const logs = await Attendance.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userData"
+        }
+      },
+      { $unwind: "$userData" },
+      {
+        $match: {
+          "userData.role": "employee",
+          "userData.isActive": true
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          employeeName: "$userData.name",
+          userId: "$userData._id",
+          role: "$userData.role",
+          position: "$userData.position",
+          department: "$userData.department",
+          company: "$userData.company",
+          dateOfJoining: "$userData.dateOfJoining",
+          bankingName: "$userData.bankDetails.bankingName",
+          accountNumber: "$userData.bankDetails.bankAccountNumber",
+          type: 1,
+          timestamp: 1,
+          officeName: { $ifNull: ["$officeName", "Outside Office"] },
+          image: { $ifNull: ["$image", ""] }
+        }
+      },
+      { $sort: { timestamp: -1 } }
+    ]);
+
+    // 3️⃣ Save to cache
+    cachedRecentAttendance = logs;
+    cacheRecentAttendanceTime = now;
+
+    // 4️⃣ Send response
+    res.json(logs);
+
+  } catch (error) {
+    console.error("Error fetching recent logs:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+},
+
+
 
   getPendingUsers: async (req, res) => {
     try {

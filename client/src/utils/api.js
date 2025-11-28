@@ -31,6 +31,8 @@ export const API_ENDPOINTS = {
   getSchedules: `${BASE_URL}/schedules`,
   putUserSchedule: (userId) => `${BASE_URL}/schedules/${userId}`,
   getAllUsers: `${BASE_URL}/employeesAttendance`,
+  getProfile: `${BASE_URL}/users/profile`,
+  updateProfile: `${BASE_URL}/users/profile`,
   // getUserById: (id) => `${BASE_URL}/users/${id}`,
   // getAttendanceByUser: (id) => `${BASE_URL}/attendance/user/${id}`,
 

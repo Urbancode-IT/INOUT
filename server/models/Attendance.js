@@ -9,4 +9,10 @@ const AttendanceSchema = new mongoose.Schema({
   image: String,
   timestamp: Date,
 });
+
+AttendanceSchema.index({ timestamp: -1 });
+AttendanceSchema.index({ user: 1 });
+AttendanceSchema.index({ type: 1 });
+AttendanceSchema.index({ isInOffice: 1 });
+
 module.exports = mongoose.model('Attendance', AttendanceSchema);

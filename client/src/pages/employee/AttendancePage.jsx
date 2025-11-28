@@ -117,8 +117,7 @@ function AttendancePage() {
       });
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
-    } catch (err) {
-      Swal.fire({
+    } catch (err) {      Swal.fire({
         icon: "error",
         title: "Camera Access Denied",
         text: "Please enable your camera and refresh the page.",
@@ -252,11 +251,13 @@ const absentDays = totalDays - presentDays;
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-lime-50 via-sky-50 to-pink-50 px-4 py-6 md:py-10 max-w-4xl mx-auto font-sans">
+      <div >
       <ProfileHeader
         name={user.name}
         position={user.position}
         company={user.company}
-      />
+        
+      /></div>
 
       <div className="mt-4 mb-4 flex justify-around text-sm font-medium text-gray-700">
         <div>

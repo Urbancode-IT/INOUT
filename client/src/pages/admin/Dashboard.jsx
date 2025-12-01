@@ -7,6 +7,7 @@ import Loader from '../../components/admin-dashboard/common/Loader';
 import { FiSearch, FiCalendar } from 'react-icons/fi';
 import AbsentUsersList from '../../components/admin-dashboard/dashboard/AbsentUsersList';
 import ReportGenerator from '../../components/admin-dashboard/dashboard/ReportGenerator';
+import { Sync } from '@mui/icons-material';
 const Dashboard = () => {
   const [summary, setSummary] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -26,29 +27,70 @@ const Dashboard = () => {
   const token = localStorage.getItem('token');
 
   // Fetch summary and logs on load
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-  try {
+ useEffect(() => {
+  const fetchDashboardData = async () => {
+    setLoading(true);
+
     const headers = { Authorization: `Bearer ${token}` };
 
-    const [summaryRes, logsRes, usersRes] = await Promise.all([
-      axios.get(API_ENDPOINTS.getAdminSummary, { headers }),
-      axios.get(API_ENDPOINTS.getRecentDashboardLogs, { headers }),
-      axios.get(API_ENDPOINTS.getAllUsers, { headers }), 
-    ]);
-    console.log("logsRes",logsRes);
-    setSummary(summaryRes.data || {});
-    setLogs(logsRes.data || []);
-    setFilteredLogs(logsRes.data || []);
-    setAllUsers(usersRes.data || []); // NEW
-  } catch (err) {
-    console.error('Dashboard loading error:', err);
-  } finally {
-    setLoading(false);
-  }
-};
-    fetchDashboardData();
-  }, [token]);
+    // Cache keys
+    const CACHE_KEY = "dashboard_cache";
+    const CACHE_TIME_KEY = "dashboard_cache_time";
+    const CACHE_TTL = 10 * 60 * 1000; // 5 minutes
+
+    // 1️⃣ Check cache
+    const cached = localStorage.getItem(CACHE_KEY);
+    const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+
+    if (cached && cachedTime && (Date.now() - cachedTime < CACHE_TTL)) {
+      console.log("⚡ Using dashboard cached data");
+      const data = JSON.parse(cached);
+
+      setSummary(data.summary);
+      setLogs(data.logs);
+      setFilteredLogs(data.logs);
+      setAllUsers(data.users);
+
+      setLoading(false);
+      return;
+    }
+
+    // 2️⃣ No cache → Fetch fresh
+    try {
+      console.log("⏳ Fetching fresh dashboard data...");
+      const [summaryRes, logsRes, usersRes] = await Promise.all([
+        axios.get(API_ENDPOINTS.getAdminSummary, { headers }),
+        axios.get(API_ENDPOINTS.getRecentDashboardLogs, { headers }),
+        axios.get(API_ENDPOINTS.getAllUsers, { headers })
+      ]);
+
+      const summary = summaryRes.data || {};
+      const logs = logsRes.data || [];
+      const users = usersRes.data || [];
+
+      // Set state
+      setSummary(summary);
+      setLogs(logs);
+      setFilteredLogs(logs);
+      setAllUsers(users);
+
+      // 3️⃣ Save to cache
+      localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({ summary, logs, users })
+      );
+      localStorage.setItem(CACHE_TIME_KEY, Date.now());
+
+    } catch (err) {
+      console.error("Dashboard loading error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchDashboardData();
+}, [token]);
+
   
   // Apply filters
   useEffect(() => { 
@@ -133,7 +175,7 @@ const Dashboard = () => {
         </div>
 
         {/* Type Filter */}
-        <select
+        {/* <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
           className="border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -141,12 +183,23 @@ const Dashboard = () => {
           <option value="all">All Types</option>
           <option value="check-in">Check In</option>
           <option value="check-out">Check Out</option>
-        </select>
+        </select> */}
+        <button className=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => {
+  localStorage.removeItem("dashboard_cache");
+  localStorage.removeItem("dashboard_cache_time");
+  window.location.reload();
+}}><Sync />
+  Refresh Data
+  
+</button>
       </div>
 
       {/* Attendance Table */}
       <div className="overflow-x-auto">
+        
       <RecentAttendanceTable logs={filteredLogs} />
+      
+
       
      <AbsentUsersList allUsers={allUsers} logs={logsForSelectedDate} /></div>
     </div>

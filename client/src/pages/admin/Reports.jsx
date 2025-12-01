@@ -93,29 +93,64 @@ const Report = () => {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const headers = { Authorization: `Bearer ${token}` };
-        const year = selectedMonth.getFullYear();
-        const month = selectedMonth.getMonth() + 1; // Months are 1-indexed in API
-        
-        const [logsRes, schedulesRes, holidaysRes] = await Promise.all([
-          axios.get(API_ENDPOINTS.getRecentAttendanceLogs, { headers }),
-          axios.get(API_ENDPOINTS.getSchedules, { headers }),
-          axios.get(`${API_ENDPOINTS.getHolidaysByMonth}?year=${year}&month=${month}`, { headers })
-        ]);
-        
-        setLogs(logsRes.data);
-        setSchedules(schedulesRes.data);
-        setHolidays(holidaysRes.data);
-      } catch (err) {
-        console.error("Failed to fetch data:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [token, selectedMonth]); // Add selectedMonth as dependency
+  const fetchData = async () => {
+    setLoading(true);
+
+    const headers = { Authorization: `Bearer ${token}` };
+    const year = selectedMonth.getFullYear();
+    const month = selectedMonth.getMonth() + 1;
+
+    // Create cache keys for this month
+    const CACHE_KEY = `attendanceCache_${year}_${month}`;
+    const CACHE_TIME_KEY = `attendanceCacheTime_${year}_${month}`;
+    const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+    // 1️⃣ Check if cached and not expired
+    const cached = localStorage.getItem(CACHE_KEY);
+    const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+
+    if (cached && cachedTime && (Date.now() - cachedTime < CACHE_TTL)) {
+      const cachedData = JSON.parse(cached);
+      console.log("⚡ Using cached data");
+      setLogs(cachedData.logs);
+      setSchedules(cachedData.schedules);
+      setHolidays(cachedData.holidays);
+      setLoading(false);
+      return;
+    }
+
+    // 2️⃣ If cache expired → fetch new data
+    try {
+      console.log("⏳ Fetching fresh data...");
+      const [logsRes, schedulesRes, holidaysRes] = await Promise.all([
+        axios.get(API_ENDPOINTS.getRecentAttendanceLogs, { headers }),
+        axios.get(API_ENDPOINTS.getSchedules, { headers }),
+        axios.get(`${API_ENDPOINTS.getHolidaysByMonth}?year=${year}&month=${month}`, { headers })
+      ]);
+
+      setLogs(logsRes.data);
+      setSchedules(schedulesRes.data);
+      setHolidays(holidaysRes.data);
+
+      // 3️⃣ Save to cache
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        logs: logsRes.data,
+        schedules: schedulesRes.data,
+        holidays: holidaysRes.data
+      }));
+      localStorage.setItem(CACHE_TIME_KEY, Date.now());
+    } 
+    catch (err) {
+      console.error("Failed to fetch data:", err);
+    } 
+    finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, [token, selectedMonth]);
+ // Add selectedMonth as dependency
 
   // Helper function to check if a date is a holiday
   const isHoliday = (date) => {

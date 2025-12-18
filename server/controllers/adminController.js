@@ -8,7 +8,7 @@ const Attendance = require('../models/Attendance');
 
 let cachedAttendance = null;
 let cacheTimestamp = null;
-const CACHE_TTL = 15 * 1000; 
+const CACHE_TTL = 15 * 1000;
 let cachedRecentAttendance = null;
 let cacheRecentAttendanceTime = null;
 const ATTENDANCE_CACHE_TTL = 60 * 1000; // 15 seconds
@@ -47,145 +47,145 @@ const adminController = {
     }
   },
 
-getRecentAttendanceDashboard: async (req, res) => {
-  try {
-    const now = Date.now();
+  getRecentAttendanceDashboard: async (req, res) => {
+    try {
+      const now = Date.now();
 
-    // 1️⃣ Check if cache exists AND is not expired
-    if (cachedAttendance && cacheTimestamp && now - cacheTimestamp < CACHE_TTL) {
-      console.log("📦 Returning cached attendance");
-      return res.json(cachedAttendance);
+      // 1️⃣ Check if cache exists AND is not expired
+      if (cachedAttendance && cacheTimestamp && now - cacheTimestamp < CACHE_TTL) {
+        console.log("📦 Returning cached attendance");
+        return res.json(cachedAttendance);
+      }
+
+      console.log("🆕 Cache expired → Fetching from DB");
+
+      // 2️⃣ Calculate last 30 days
+      const end = new Date();
+      const start = new Date();
+      start.setDate(start.getDate() - 30);
+
+      // 3️⃣ Run your aggregation
+      const logs = await Attendance.aggregate([
+        {
+          $match: { timestamp: { $gte: start, $lt: end } }
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "user",
+            foreignField: "_id",
+            as: "userData"
+          }
+        },
+        { $unwind: "$userData" },
+        {
+          $match: {
+            "userData.role": "employee",
+            "userData.isActive": true
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            employeeName: "$userData.name",
+            userId: "$userData._id",
+            role: "$userData.role",
+            position: "$userData.position",
+            department: "$userData.department",
+            company: "$userData.company",
+            type: 1,
+            timestamp: 1,
+            officeName: { $ifNull: ["$officeName", "Outside Office"] },
+            image: { $ifNull: ["$image", ""] }
+          }
+        },
+        { $sort: { timestamp: -1 } },
+        { $limit: 1500 }
+      ]);
+
+      // 4️⃣ Save to cache
+      cachedAttendance = logs;
+      cacheTimestamp = now;
+
+      return res.json(logs);
+
+    } catch (err) {
+      console.error("Error:", err);
+      res.status(500).json({ error: "Server error" });
     }
-
-    console.log("🆕 Cache expired → Fetching from DB");
-
-    // 2️⃣ Calculate last 30 days
-    const end = new Date();
-    const start = new Date();
-    start.setDate(start.getDate() - 30);
-
-    // 3️⃣ Run your aggregation
-    const logs = await Attendance.aggregate([
-      {
-        $match: { timestamp: { $gte: start, $lt: end } }
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "user",
-          foreignField: "_id",
-          as: "userData"
-        }
-      },
-      { $unwind: "$userData" },
-      {
-        $match: {
-          "userData.role": "employee",
-          "userData.isActive": true
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          employeeName: "$userData.name",
-          userId: "$userData._id",
-          role: "$userData.role",
-          position: "$userData.position",
-          department: "$userData.department",
-          company: "$userData.company",
-          type: 1,
-          timestamp: 1,
-          officeName: { $ifNull: ["$officeName", "Outside Office"] },
-          image: { $ifNull: ["$image", ""] }
-        }
-      },
-      { $sort: { timestamp: -1 } },
-      { $limit: 1500 }
-    ]);
-
-    // 4️⃣ Save to cache
-    cachedAttendance = logs;
-    cacheTimestamp = now;
-
-    return res.json(logs);
-
-  } catch (err) {
-    console.error("Error:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-},
+  },
 
 
 
 
 
 
-getRecentAttendance: async (req, res) => {
-  try {
-    const now = Date.now();
+  getRecentAttendance: async (req, res) => {
+    try {
+      const now = Date.now();
 
-    // 1️⃣ If cache available and not expired → return cached response
-    if (
-      cachedRecentAttendance &&
-      cacheRecentAttendanceTime &&
-      now - cacheRecentAttendanceTime < ATTENDANCE_CACHE_TTL
-    ) {
-      console.log("📦 Returning cached RECENT ATTENDANCE");
-      return res.json(cachedRecentAttendance);
+      // 1️⃣ If cache available and not expired → return cached response
+      if (
+        cachedRecentAttendance &&
+        cacheRecentAttendanceTime &&
+        now - cacheRecentAttendanceTime < ATTENDANCE_CACHE_TTL
+      ) {
+        console.log("📦 Returning cached RECENT ATTENDANCE");
+        return res.json(cachedRecentAttendance);
+      }
+
+      console.log("🆕 Cache expired → Fetching RECENT ATTENDANCE from DB");
+
+      // 2️⃣ Fetch from database (optimized version)
+      const logs = await Attendance.aggregate([
+        {
+          $lookup: {
+            from: "users",
+            localField: "user",
+            foreignField: "_id",
+            as: "userData"
+          }
+        },
+        { $unwind: "$userData" },
+        {
+          $match: {
+            "userData.role": "employee",
+            "userData.isActive": true
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            employeeName: "$userData.name",
+            userId: "$userData._id",
+            role: "$userData.role",
+            position: "$userData.position",
+            department: "$userData.department",
+            company: "$userData.company",
+            dateOfJoining: "$userData.dateOfJoining",
+            bankingName: "$userData.bankDetails.bankingName",
+            accountNumber: "$userData.bankDetails.bankAccountNumber",
+            type: 1,
+            timestamp: 1,
+            officeName: { $ifNull: ["$officeName", "Outside Office"] },
+            image: { $ifNull: ["$image", ""] }
+          }
+        },
+        { $sort: { timestamp: -1 } }
+      ]);
+
+      // 3️⃣ Save to cache
+      cachedRecentAttendance = logs;
+      cacheRecentAttendanceTime = now;
+
+      // 4️⃣ Send response
+      res.json(logs);
+
+    } catch (error) {
+      console.error("Error fetching recent logs:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
-
-    console.log("🆕 Cache expired → Fetching RECENT ATTENDANCE from DB");
-
-    // 2️⃣ Fetch from database (optimized version)
-    const logs = await Attendance.aggregate([
-      {
-        $lookup: {
-          from: "users",
-          localField: "user",
-          foreignField: "_id",
-          as: "userData"
-        }
-      },
-      { $unwind: "$userData" },
-      {
-        $match: {
-          "userData.role": "employee",
-          "userData.isActive": true
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          employeeName: "$userData.name",
-          userId: "$userData._id",
-          role: "$userData.role",
-          position: "$userData.position",
-          department: "$userData.department",
-          company: "$userData.company",
-          dateOfJoining: "$userData.dateOfJoining",
-          bankingName: "$userData.bankDetails.bankingName",
-          accountNumber: "$userData.bankDetails.bankAccountNumber",
-          type: 1,
-          timestamp: 1,
-          officeName: { $ifNull: ["$officeName", "Outside Office"] },
-          image: { $ifNull: ["$image", ""] }
-        }
-      },
-      { $sort: { timestamp: -1 } }
-    ]);
-
-    // 3️⃣ Save to cache
-    cachedRecentAttendance = logs;
-    cacheRecentAttendanceTime = now;
-
-    // 4️⃣ Send response
-    res.json(logs);
-
-  } catch (error) {
-    console.error("Error fetching recent logs:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-},
+  },
 
 
 
@@ -211,7 +211,18 @@ getRecentAttendance: async (req, res) => {
         phone: pending.phone,
         position: pending.position,
         company: pending.company,
-        role: 'employee'
+        role: 'employee',
+        salary: pending.salary,
+        department: pending.department,
+        qualification: pending.qualification,
+        dateOfJoining: pending.dateOfJoining,
+        rolesAndResponsibility: pending.rolesAndResponsibility,
+        skills: pending.skills,
+        profilePic: pending.profilePic,
+        bloodGroup: pending.bloodGroup,
+        address: pending.address,
+        bankDetails: pending.bankDetails,
+        schedule: pending.schedule
       });
       await user.save();
 

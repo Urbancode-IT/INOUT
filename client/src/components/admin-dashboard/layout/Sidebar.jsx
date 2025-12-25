@@ -23,23 +23,23 @@ const menuItems = [
     icon: <FiCalendar />,
     subItems: [
       { label: 'Leave Records', path: '/leave-requests' },
-      { label: 'Late Reports', path: '/late-reports' }
+      { label: 'Late Reports', path: '/coming-soon/late-reports' }
     ]
   },
   {
     label: 'Documents',
     icon: <FiFileText />,
     subItems: [
-      { label: 'Experience Letters', path: '/experience-letters' },
-      { label: 'Offer Letters', path: '/offer-letters' },
-      { label: 'Relieving Letters', path: '/relieving-letters' },
-      { label: 'Upload Documents', path: '/upload-documents' }
+      { label: 'Experience Letters', path: '/coming-soon/experience-letters' },
+      { label: 'Offer Letters', path: '/coming-soon/offer-letters' },
+      { label: 'Relieving Letters', path: '/coming-soon/relieving-letters' },
+      { label: 'Upload Documents', path: '/coming-soon/upload-documents' }
     ]
   },
   { label: 'Pay History', icon: <FiDollarSign />, path: '/salaryhistory' },
   { label: 'Payslip Generator', icon: <FiBarChart2 />, path: '/payslip' },
   { label: 'Holiday List', icon: <FiCalendar />, path: '/holidays' },
-  { label: 'Settings', icon: <FiSettings />, path: '/settings' }
+  { label: 'Settings', icon: <FiSettings />, path: '/coming-soon/settings' }
 ];
 
 const Sidebar = ({ isOpen, setIsOpen }) => {

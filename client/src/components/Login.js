@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
@@ -15,7 +15,26 @@ function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
 
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        const isExpired = decoded.exp * 1000 < Date.now();
+
+        if (isExpired) {
+          localStorage.removeItem('token');
+        } else {
+          if (decoded.role === 'admin') navigate('/dashboard');
+          else if (decoded.role === 'employee') navigate('/attendance');
+        }
+      } catch (err) {
+        console.error('Error decoding token:', err);
+        localStorage.removeItem('token');
+      }
+    }
+  }, []);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);

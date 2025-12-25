@@ -3,7 +3,7 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  
 }
 
 .holidays-content {
@@ -18,7 +18,7 @@
 .holidays-header {
   padding: 25px;
   text-align: center;
-  /* background: linear-gradient(90deg, #4F46E5 0%, #7C3AED 100%);
+  /* background: linear-gradient(90deg, #616161 0%, #7C3AED 100%);
   color: white; */
 }
 
@@ -53,7 +53,7 @@
 
 .upcoming-holidays h2 {
   margin-top: 0;
-  color: #4F46E5;
+  color: #a1a0ae;
   font-size: 1.4rem;
 }
 
@@ -89,7 +89,7 @@
 
 .all-holidays-section h2 {
   margin-top: 0;
-  color: #4F46E5;
+  color: #616161;
   font-size: 1.4rem;
 }
 
@@ -122,7 +122,7 @@
 }
 
 .btn-edit {
-  background: #4F46E5;
+  background: #616161;
   color: white;
   border: none;
   padding: 6px 12px;
@@ -132,7 +132,7 @@
 }
 
 .btn-edit:hover {
-  background: #4338CA;
+  background: #616161;
 }
 
 .loading, .no-holidays {
@@ -163,7 +163,7 @@
 }
 
 .holiday-calendar .react-calendar__tile--active {
-  background: #4F46E5 !important;
+  background: #616161 !important;
   color: white;
 }
 
@@ -187,7 +187,7 @@
 }
 
 .holiday-calendar .react-calendar__navigation {
-  background: #4F46E5;
+  background: #616161;
   height: 60px;
   margin-bottom: 0;
 }
@@ -200,7 +200,7 @@
 
 .holiday-calendar .react-calendar__navigation button:enabled:hover,
 .holiday-calendar .react-calendar__navigation button:enabled:focus {
-  background: #4338CA;
+  background: #616161;
 }
 
 /* Holiday indicator */
@@ -242,7 +242,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #4F46E5;
+  background: #616161;
   margin-top: 4px;
 }
 

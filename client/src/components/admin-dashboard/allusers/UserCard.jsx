@@ -63,11 +63,12 @@ const UserCard = ({ user, className = '', onEdit }) => {
 
         <div className="flex items-center gap-4">
           <div className="relative">
-            <img
+            {/* <img
               src={'https://www.pikpng.com/pngl/m/154-1540525_male-user-filled-icon-my-profile-icon-png.png'}
               alt={`${user.name}'s avatar`}
               className={`w-16 h-16 rounded-full object-cover ring-2 ring-gray-200 p-1 `}
-            />
+            /> */}
+            <div className={`w-16 h-16 text-3xl font-semibold rounded-full flex justify-center items-center ring-2 ring-gray-200 p-1 `}>{user.name.charAt(0)}</div>
             <img
               src={getCompanyLogo(user.company)}
               alt={`${user.company} logo`}
@@ -108,7 +109,7 @@ const UserCard = ({ user, className = '', onEdit }) => {
             <img
               src={'https://www.pikpng.com/pngl/m/154-1540525_male-user-filled-icon-my-profile-icon-png.png'}
               alt={`${user.name}'s avatar`}
-              className={`w-36 h-36 rounded-full object-cover ring-4  shadow-md p-1  ${user.isActive?'ring-green-300': 'ring-red-300'}`}
+              className={`w-36 h-36  rounded-full object-cover shadow-md p-1`}
             />
             <img
               src={getCompanyLogo(user.company)}

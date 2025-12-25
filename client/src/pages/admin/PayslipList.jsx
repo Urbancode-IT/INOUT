@@ -24,6 +24,7 @@ import {
 } from "@mui/icons-material";
 import { API_ENDPOINTS } from "../../utils/api";
 import dayjs from "dayjs";
+import Loader from "../../components/admin-dashboard/common/Loader";
 
 const PayslipList = () => {
   const [payslips, setPayslips] = useState([]);
@@ -247,9 +248,10 @@ const PayslipList = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-        <CircularProgress />
-      </Box>
+      <Loader/>
+      // <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+      //   <CircularProgress />
+      // </Box>
     );
   }
 
@@ -258,7 +260,7 @@ const PayslipList = () => {
       {/* Header with title and filters */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h5" component="h4" fontWeight="bold" color="#16192aff">
-          Employee Payslips
+          <span className="text-gray-600">Employee Payslips</span>
         </Typography>
       </Box>
 
@@ -356,7 +358,7 @@ const PayslipList = () => {
               sx={{ 
                 mb: 2, 
                 p: 1, 
-                backgroundColor: '#2538a183', 
+                backgroundColor: '#616161', 
                 color: 'white', 
                 borderRadius: 1,
                 display: 'flex',
@@ -374,7 +376,7 @@ const PayslipList = () => {
                     <CardContent>
                       <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
                         <Box>
-                          <Typography variant="h6" component="h3" color="primary" fontWeight="bold">
+                          <Typography variant="h6" component="h3" color="textSecondary" fontWeight="bold">
                             {payslip.employeeDetails?.name}
                           </Typography>
                           <Typography variant="body2" color="textSecondary">
@@ -395,6 +397,7 @@ const PayslipList = () => {
                       <Box mt={2}>
                         <Button
                           variant="contained"
+                          color=""
                           startIcon={<Download />}
                           onClick={() => generatePDF(payslip)}
                           fullWidth

@@ -23,6 +23,7 @@ import uclogo from "../../assets/logo.png";
 import jzlogo from "../../assets/jzlogo.png";
 import { API_ENDPOINTS } from "../../utils/api";
   import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Loader from "../../components/admin-dashboard/common/Loader";
 const PayslipGenerator = () => {
   const [companyLogo, setCompanyLogo] = useState(uclogo);
   const [selectedMonth, setSelectedMonth] = useState(() => new Date());
@@ -246,9 +247,10 @@ const theme = createTheme({
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
-        <CircularProgress />
-      </Box>
+      // <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+      //   <CircularProgress />
+      // </Box>
+      <Loader/>
     );
   }
 
@@ -275,8 +277,9 @@ const theme = createTheme({
     <Container maxWidth="md" sx={{ my: 4 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center">
           
-          <Typography variant="h5" fontWeight="bold">
-            Pay Slip Generator
+          <Typography variant="h5" fontWeight="bold" >
+            <span className="text-gray-600">
+            Pay Slip Generator</span>
           </Typography>
         </Box>
 

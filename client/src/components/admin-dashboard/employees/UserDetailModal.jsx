@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Loader from '../common/Loader';
 
 const UserDetailModal = ({ user, onClose }) => {
   const [summary, setSummary] = useState(null);
@@ -65,7 +66,8 @@ const UserDetailModal = ({ user, onClose }) => {
         <div className="bg-gray-100 p-4 rounded-lg">
           <h3 className="text-md font-semibold text-gray-800 mb-2">🕒 Last Attendance</h3>
           {loading ? (
-            <p className="text-gray-500 text-sm">Loading...</p>
+            <Loader/>
+            // <p className="text-gray-500 text-sm">Loading...</p>
           ) : last && last.timestamp ? (
             <p className="text-sm text-gray-700">
               {last.type.toUpperCase()} on{' '}

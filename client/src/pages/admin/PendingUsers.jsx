@@ -3,6 +3,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { API_ENDPOINTS } from '../../utils/api';
 import { FiUserCheck, FiUserX } from 'react-icons/fi';
+import Loader from '../../components/admin-dashboard/common/Loader';
 
 const PendingUsers = () => {
   const [pendingUsers, setPendingUsers] = useState([]);
@@ -75,7 +76,7 @@ const PendingUsers = () => {
     fetchPendingUsers();
   }, []);
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (loading) return <Loader/>;
 
   return (
     <div className="p-6 max-w-5xl mx-auto">

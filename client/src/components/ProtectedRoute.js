@@ -1,17 +1,29 @@
 // src/components/ProtectedRoute.js
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from './AuthContext'; // Assuming you have an auth context
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth(); // Get authentication status from your auth context
+  const token = localStorage.getItem("token");
 
-  if (!isAuthenticated) {
-    // If not authenticated, redirect to login page
+  if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  try {
+    const decoded = jwtDecode(token);
+    const isExpired = decoded.exp * 1000 < Date.now();
+
+    if (isExpired) {
+      localStorage.removeItem("token");
+      return <Navigate to="/login" replace />;
+    }
+
+    return children;
+  } catch (err) {
+    localStorage.removeItem("token");
+    return <Navigate to="/login" replace />;
+  }
 }
 
 export default ProtectedRoute;

@@ -5,6 +5,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { API_ENDPOINTS } from '../../utils/api';
 import './Holidays.css'; // We'll create this CSS file for custom styling
+import Loader from '../../components/admin-dashboard/common/Loader';
 
 const Holidays = () => {
   const [holidays, setHolidays] = useState([]);
@@ -176,8 +177,8 @@ const Holidays = () => {
   return (
     <div className="holidays-container">
       <div className="holidays-content">
-        <div className="holidays-header">
-          <h1>📅 Holiday Calendar</h1>
+        <div className="holidays-header text-gray-600">
+          <h1 className=' font-semibold'> Holiday Calendar</h1>
           <p>Click on a date to manage holidays</p>
         </div>
 
@@ -198,7 +199,7 @@ const Holidays = () => {
           <div className="upcoming-holidays">
             <h2> Upcoming Holidays</h2>
             {loading ? (
-              <div className="loading">Loading holidays...</div>
+              <Loader/>
             ) : upcomingHolidays.length > 0 ? (
               <ul>
                 {upcomingHolidays.map((h) => (
@@ -217,7 +218,7 @@ const Holidays = () => {
         <div className="all-holidays-section">
           <h2>📋 All Holidays</h2>
           {loading ? (
-            <div className="loading">Loading holidays...</div>
+            <Loader/>
           ) : holidays.length > 0 ? (
             <div className="holidays-table-container">
               <table className="holidays-table">

@@ -18,6 +18,7 @@ import {
   KeyboardArrowUp as CollapseIcon
 } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Loader from '../../components/admin-dashboard/common/Loader';
 
 const theme = createTheme({
   typography: {
@@ -61,7 +62,7 @@ const MonthHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   padding: theme.spacing(1, 2),
-  backgroundColor: theme.palette.primary.main,
+  backgroundColor: theme.palette.grey[600],
   color: theme.palette.primary.contrastText,
   borderRadius: theme.shape.borderRadius,
   marginBottom: theme.spacing(2),
@@ -155,14 +156,14 @@ const LeaveRequestsAdmin = () => {
           gutterBottom
           sx={{
             fontWeight: 700,
-            color: 'primary.main',
             mb: 4,
           }}
         >
-          Leave Requests Management
+          <span className='text-gray-600'>
+          Leave Requests Management</span>
         </Typography>
 
-        {loading && <LinearProgress sx={{ mb: 2 }} />}
+        {loading && <Loader />}
 
         {sortedMonths.length === 0 && !loading && (
           <Box
@@ -189,7 +190,7 @@ const LeaveRequestsAdmin = () => {
             <Paper elevation={2} sx={{ overflow: 'hidden' }}>
               <Table>
                 <TableHead>
-                  <TableRow sx={{ bgcolor: 'primary.light' }}>
+                  <TableRow sx={{ bgcolor: 'grey.400' }}>
                     
                     <TableCell sx={{ color: 'primary.contrastText', fontWeight: 600 }}>Employee</TableCell>
                     <TableCell sx={{ color: 'primary.contrastText', fontWeight: 600 }}>Leave Period</TableCell>

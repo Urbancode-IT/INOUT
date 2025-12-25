@@ -117,7 +117,8 @@ function AttendancePage() {
       });
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
-    } catch (err) {      Swal.fire({
+    } catch (err) {
+      Swal.fire({
         icon: "error",
         title: "Camera Access Denied",
         text: "Please enable your camera and refresh the page.",
@@ -209,55 +210,105 @@ function AttendancePage() {
     navigate("/login");
   };
 
- const now = new Date();
-const thisMonth = now.getMonth();
-const thisYear = now.getFullYear();
+  const now = new Date();
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
 
-const attendanceMap = {};
+  // Update your attendanceMap calculation:
+  const attendanceMap = {};
+
+  attendanceHistory.forEach((entry) => {
+    try {
+      const entryDate = new Date(entry.timestamp);
+      const dateKey = entryDate.toDateString(); // Format: "Mon Mar 10 2025"
+
+      if (!attendanceMap[dateKey]) {
+        attendanceMap[dateKey] = {
+          checkin: false,
+          checkout: false,
+          inTime: null,
+          outTime: null
+        };
+      }
+
+      if (entry.type === "check-in") {
+        attendanceMap[dateKey].checkin = true;
+        attendanceMap[dateKey].inTime = entry.timestamp;
+      }
+      if (entry.type === "check-out") {
+        attendanceMap[dateKey].checkout = true;
+        attendanceMap[dateKey].outTime = entry.timestamp;
+      }
+    } catch (err) {
+      console.error("Error parsing date:", entry.timestamp, err);
+    }
+  });
+
+  // Today's filtered logs (unchanged)
+  const filteredLogs = attendanceHistory.filter(
+    (entry) =>
+      new Date(entry.timestamp).toDateString() === selectedDate.toDateString()
+  );
+
+// Get current month and year
+const currentYear = now.getFullYear();
+const currentMonth = now.getMonth();
+
+// Filter attendance for current month only
+const currentMonthAttendance = {};
 
 attendanceHistory.forEach((entry) => {
-  const entryDate = new Date(entry.timestamp);
-
-  // Count only this month's dates
-  if (
-    entryDate.getMonth() === thisMonth &&
-    entryDate.getFullYear() === thisYear
-  ) {
-    const dateKey = entryDate.toDateString();
-
-    if (!attendanceMap[dateKey])
-      attendanceMap[dateKey] = { checkin: false, checkout: false };
-
-    if (entry.type === "check-in") attendanceMap[dateKey].checkin = true;
-    if (entry.type === "check-out") attendanceMap[dateKey].checkout = true;
+  try {
+    const entryDate = new Date(entry.timestamp);
+    
+    // Check if entry is from current month
+    if (entryDate.getFullYear() === currentYear && entryDate.getMonth() === currentMonth) {
+      const dateKey = entryDate.toDateString();
+      
+      if (!currentMonthAttendance[dateKey]) {
+        currentMonthAttendance[dateKey] = { 
+          checkin: false, 
+          checkout: false 
+        };
+      }
+      
+      if (entry.type === "check-in") currentMonthAttendance[dateKey].checkin = true;
+      if (entry.type === "check-out") currentMonthAttendance[dateKey].checkout = true;
+    }
+  } catch (err) {
+    console.error("Error parsing date:", entry.timestamp, err);
   }
 });
 
-// Today's filtered logs (unchanged)
-const filteredLogs = attendanceHistory.filter(
-  (entry) =>
-    new Date(entry.timestamp).toDateString() === selectedDate.toDateString()
-);
+// Count present days in current month
+const presentDays = Object.keys(currentMonthAttendance).length;
 
-// Count only days in this month
-const presentDays = Object.keys(attendanceMap).length;
+// Total days passed in current month (1st → today)
+const totalDaysInCurrentMonth = now.getDate();
 
-// Total days passed in this month (1st → today)
-const totalDays = now.getDate();
+// Calculate full attendance days (both check-in and check-out)
+const fullAttendanceDays = Object.values(currentMonthAttendance).filter(
+  day => day.checkin && day.checkout
+).length;
 
-// Absent = (days till today) - (present days)
-const absentDays = totalDays - presentDays;
+// Calculate partial attendance days (only check-in)
+const partialAttendanceDays = Object.values(currentMonthAttendance).filter(
+  day => day.checkin && !day.checkout
+).length;
+
+// Absent days calculation (only count working days if you want)
+const absentDays = Math.max(0, totalDaysInCurrentMonth - presentDays);
 
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-lime-50 via-sky-50 to-pink-50 px-4 py-6 md:py-10 max-w-4xl mx-auto font-sans">
       <div >
-      <ProfileHeader
-        name={user.name}
-        position={user.position}
-        company={user.company}
-        
-      /></div>
+        <ProfileHeader
+          name={user.name}
+          position={user.position}
+          company={user.company}
+
+        /></div>
 
       <div className="mt-4 mb-4 flex justify-around text-sm font-medium text-gray-700">
         <div>
@@ -267,7 +318,10 @@ const absentDays = totalDays - presentDays;
           ❌ Leaves: <span className="text-red-600">{absentDays}</span>
         </div>
         <div>
-          📅 Total: <span className="text-blue-600">{totalDays}</span>
+          📅 Partial: <span className="text-yellow-600">{partialAttendanceDays}</span>
+        </div>
+        <div>
+          📅 Total: <span className="text-blue-600">{fullAttendanceDays}</span>
         </div>
       </div>
 
@@ -308,9 +362,9 @@ const absentDays = totalDays - presentDays;
 
       {showCalendarModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg max-w-md w-full relative">
+          <div className="bg-white p-6 rounded-xl shadow-lg max-w-lg w-full relative">
             <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+              className="absolute top-2 right-2 text-gray-500 text-2xl hover:text-black"
               onClick={() => setShowCalendarModal(false)}
             >
               ✕
@@ -320,34 +374,129 @@ const absentDays = totalDays - presentDays;
               {calendarViewDate.toLocaleString("default", { month: "long" })}{" "}
               {calendarViewDate.getFullYear()}
             </h2>
+
             <Calendar
-              onChange={setSelectedDate}
+              className="m-auto p-4 rounded-lg"
+              onChange={(date) => {
+                setSelectedDate(date);
+                
+              }}
               value={selectedDate}
               onActiveStartDateChange={({ activeStartDate }) =>
                 setCalendarViewDate(activeStartDate)
               }
               tileClassName={({ date, view }) => {
                 if (view === "month") {
+                  const now = new Date();
+                  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                  // Don't show status for future dates
+                  if (date > today) return "";
+
                   const key = date.toDateString();
                   const record = attendanceMap[key];
-                  if (record?.checkin && record?.checkout) return "present-day";
-                  if (record?.checkin && !record?.checkout)
-                    return "partial-present";
-                  if (!record) return "absent-day";
+
+                  let className = "";
+                  if (record?.checkin && record?.checkout) className = "present-day";
+                  else if (record?.checkin && !record?.checkout) className = "partial-present";
+                  else if (date < today) className = "absent-day";
+
+                  // Add hover class if there's a record
+                  if (record) className += " calendar-tile-hover";
+
+                  return className;
                 }
                 return "";
               }}
+              // tileContent={({ date, view }) => {
+              //   if (view === "month") {
+              //     const key = date.toDateString();
+              //     const record = attendanceMap[key];
+
+              //     if (record) {
+              //       return (
+              //         <div className="text-[9px] font-medium mt-1">
+              //           {record.inTime && (
+              //             <div className="text-green-600">✓ {new Date(record.inTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+              //           )}
+              //           {record.outTime && (
+              //             <div className="text-blue-600">✗ {new Date(record.outTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+              //           )}
+              //         </div>
+              //       );
+              //     }
+              //   }
+              //   return null;
+              // }}
+              tileDisabled={({ date, view }) => {
+                if (view === "month") {
+                  const now = new Date();
+                  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                  // Disable future dates from being selected
+                  return date > today;
+                }
+                return false;
+              }}
             />
-            <div className="flex justify-around mt-4 text-sm">
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h3 className="font-semibold text-gray-700 mb-2">Selected Date: {selectedDate.toDateString()}</h3>
+              {(() => {
+                const key = selectedDate.toDateString();
+                const record = attendanceMap[key];
+
+                if (record?.checkin || record?.checkout) {
+                  return (
+                    <div className="space-y-2">
+                      {record.inTime && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Check-in Time:</span>
+                          <span className="font-medium text-green-600">
+                            {new Date(record.inTime).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                      )}
+                      {record.outTime && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Check-out Time:</span>
+                          <span className="font-medium text-blue-600">
+                            {new Date(record.outTime).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                      )}
+                      {record.checkin && !record.checkout && (
+                        <div className="text-amber-600 text-sm italic">
+                          Only checked in for this day
+                        </div>
+                      )}
+                    </div>
+                  );
+                } else if (selectedDate > new Date()) {
+                  return <div className="text-gray-500">Future date</div>;
+                } else {
+                  return <div className="text-red-500">No attendance record</div>;
+                }
+              })()}
+            </div>
+            <div className="flex flex-wrap justify-center gap-3 mt-4 text-sm">
               <div className="flex items-center gap-2">
-                <span className="w-4 h-4 bg-green-200 rounded"></span>Present
+                <span className="w-4 h-4 bg-green-200 rounded"></span>
+                <span>Present</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-4 h-4 bg-yellow-200 rounded"></span>Check-in
-                Only
+                <span className="w-4 h-4 bg-yellow-200 rounded"></span>
+                <span>Check-in Only</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-4 h-4 bg-red-200 rounded"></span>Absent
+                <span className="w-4 h-4 bg-red-200 rounded"></span>
+                <span>Absent</span>
               </div>
             </div>
           </div>
@@ -439,16 +588,14 @@ const absentDays = totalDays - presentDays;
                   </button>
                   <button
                     onClick={submitAttendance}
-                    className={`bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg ${
-                      isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                    className={`bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
                     disabled={isSubmitting}
                   >
                     {isSubmitting
                       ? "Submitting..."
-                      : `Submit ${
-                          type === "check-in" ? "Check In" : "Check Out"
-                        }`}
+                      : `Submit ${type === "check-in" ? "Check In" : "Check Out"
+                      }`}
                   </button>
                 </div>
               </>

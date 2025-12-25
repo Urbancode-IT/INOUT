@@ -3,6 +3,7 @@ import axios from 'axios';
 import { API_ENDPOINTS } from '../../utils/api';
 import UserCard from '../../components/admin-dashboard/allusers/UserCard';
 import EditUser from '../../components/admin-dashboard/allusers/EditUser';
+import Loader from '../../components/admin-dashboard/common/Loader';
 
 const AllUsers = () => {
   const [users, setUsers] = useState([]);
@@ -28,11 +29,17 @@ const AllUsers = () => {
     fetchUsers();
   }, []);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loader/>;
+
+  // Show active users first, then inactive users
+  const sortedUsers = [...(users || [])].sort((a, b) => {
+    if (a.isActive === b.isActive) return 0;
+    return a.isActive ? -1 : 1; // active (true) comes before inactive (false)
+  });
 
   return (
     <div className="p-6 grid grid-cols-1  gap-4">
-      {users.map(user => (
+      {sortedUsers.map(user => (
         <UserCard
           key={user._id}
           user={user}

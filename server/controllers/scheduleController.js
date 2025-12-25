@@ -7,8 +7,8 @@ const scheduleController = {
     const schedules = await Schedule.find()
       .populate({
         path: 'user',
-        select: 'name email role company position',
-        match: { role: 'employee' }  // Only populate if user role is employee
+        select: 'name email role company position isActive',
+        match: { role: 'employee', isActive:true }  // Only populate if user role is employee
       });
 
     // Filter out schedules where populate didn't find a matching user
